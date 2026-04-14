@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% block title %}Edit Pharmacy - PharmaC{% endblock %}
+
+{% block sidebar %}
+<div class="nav-section-label">Overview</div>
+<a href="{{ url_for('user.system_admin_dashboard') }}" class="nav-link">
+    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+    Dashboard
+</a>
+
+<div class="nav-section-label">System</div>
+<a href="{{ url_for('user.view_pharmacies') }}" class="nav-link active">
+    <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    Manage Pharmacies
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>Update Pharmacy</h2>
+    <p>Edit pharmacy details and save changes.</p>
+</div>
+
+<div class="card" style="max-width:760px;">
+    <div class="card-head">
+        <h3>Pharmacy Details</h3>
+        <a href="{{ url_for('user.view_pharmacies') }}" class="btn btn-ghost">Back</a>
+    </div>
+    <div class="card-body">
+        <form method="POST" action="{{ url_for('user.edit_pharmacy', pharmacy_id=pharmacy[0]) }}">
+            <div class="field-grid">
+                <div class="field">
+                    <label>Pharmacy Code</label>
+                    <input type="text" value="{{ pharmacy[1] }}" readonly>
+                </div>
+                <div class="field">
+                    <label>License Number</label>
+                    <input type="text" name="licenseNumber" value="{{ pharmacy[5] or '' }}" placeholder="KER-LIC-0001">
+                </div>
+            </div>
+            <div class="field-grid" style="margin-top:14px;">
+                <div class="field">
+                    <label>Contact Number</label>
+                    <input type="text" name="contactNumber" value="{{ pharmacy[4] or '' }}">
+                </div>
+                <div class="field" style="max-width:260px;">
+                    <label>Status</label>
+                    <select name="status">
+                        <option value="active" {% if pharmacy[6] == 'active' %}selected{% endif %}>Active</option>
+                        <option value="inactive" {% if pharmacy[6] == 'inactive' %}selected{% endif %}>Inactive</option>
+                    </select>
+                </div>
+            </div>
+            <div class="field" style="margin-top:14px;">
+                <label>Pharmacy Name</label>
+                <input type="text" name="name" value="{{ pharmacy[2] }}" required>
+            </div>
+            <div class="field" style="margin-top:14px;">
+                <label>Location</label>
+                <input type="text" name="location" value="{{ pharmacy[3] or '' }}">
+            </div>
+            <div class="btn-row">
+                <button type="submit" class="btn btn-teal">Update Pharmacy</button>
+                <a href="{{ url_for('user.view_pharmacies') }}" class="btn btn-ghost">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+.field-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+.field { display:flex; flex-direction:column; gap:6px; }
+.field label { font-size:.78rem; text-transform:uppercase; letter-spacing:.08em; color:var(--slate); font-weight:600; }
+.field input, .field select {
+    width:100%; padding:10px 12px; border:1px solid var(--line); border-radius:10px;
+    font-size:.9rem; color:var(--navy); background:#fff; outline:none;
+}
+.field input:focus, .field select:focus { border-color:var(--teal); box-shadow:0 0 0 3px rgba(13,148,136,.12); }
+.btn-row { display:flex; gap:10px; margin-top:18px; flex-wrap:wrap; }
+@media (max-width:900px) { .field-grid { grid-template-columns:1fr; } }
+</style>
+{% endblock %}

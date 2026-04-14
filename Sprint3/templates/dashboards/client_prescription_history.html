@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block title %}Prescription History - PharmaC{% endblock %}
+{% block sidebar %}
+{% set active_page = 'prescription_history' %}
+{% include 'dashboards/_client_sidebar.html' %}
+{% endblock %}
+{% block content %}
+<div class="page-header"><h2>Prescription History</h2><p>All prescriptions written for you.</p></div>
+<div class="card"><div class="card-body" style="padding:0;">
+{% if prescriptions %}
+<table class="tbl"><thead><tr><th>#</th><th>Doctor</th><th>Document</th><th>Date</th><th>Status</th></tr></thead><tbody>
+{% for p in prescriptions %}<tr><td>{{ p[0] }}</td><td>Dr. {{ p[1] }}</td><td>{{ p[2] }}</td><td>{{ p[3] }}</td><td><span class="badge badge-{{ p[4] }}">{{ p[4].replace('_', ' ').title() }}</span></td></tr>{% endfor %}
+</tbody></table>
+{% else %}<div style="padding:48px;text-align:center;color:var(--slate);">No prescription history yet.</div>{% endif %}
+</div></div>
+{% endblock %}

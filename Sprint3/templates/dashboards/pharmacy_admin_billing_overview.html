@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+{% block title %}Billing Overview - PharmaCare{% endblock %}
+{% block page_title %}Billing Overview{% endblock %}
+{% set active_page = active_page|default('billing_overview') %}
+
+{% block sidebar %}
+<div class="nav-section-label">Overview</div>
+<a href="{{ url_for('user.pharmacy_admin_dashboard') }}" class="nav-link {{ 'active' if active_page == 'dashboard' else '' }}">
+    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+    Dashboard
+</a>
+
+<div class="nav-section-label">Staff</div>
+<a href="{{ url_for('user.pharmacy_admin_manage_staff') }}" class="nav-link {{ 'active' if active_page == 'manage_staff' else '' }}">
+    <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    Manage Staff
+</a>
+
+<div class="nav-section-label">Inventory</div>
+<a href="{{ url_for('user.pharmacy_admin_inventory') }}" class="nav-link {{ 'active' if active_page == 'inventory' else '' }}">
+    <svg viewBox="0 0 24 24"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18"/></svg>
+    Stock Management
+</a>
+<a href="{{ url_for('user.pharmacy_admin_orders') }}" class="nav-link {{ 'active' if active_page == 'orders' else '' }}">
+    <svg viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+    Orders
+</a>
+
+<div class="nav-section-label">Finance</div>
+<a href="{{ url_for('user.pharmacy_admin_sales_reports') }}" class="nav-link {{ 'active' if active_page == 'sales_reports' else '' }}">
+    <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+    Sales Reports
+</a>
+<a href="{{ url_for('user.pharmacy_admin_billing_overview') }}" class="nav-link {{ 'active' if active_page == 'billing_overview' else '' }}">
+    <svg viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+    Billing Overview
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>Billing Overview</h2>
+    <p>All pharmacy bills and payment status.</p>
+</div>
+
+<div class="stats-grid" style="margin-bottom:20px;">
+    <div class="stat-card">
+        <div class="stat-label">Total Bills</div>
+        <div class="stat-value">{{ total_bills }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Paid Bills</div>
+        <div class="stat-value" style="color:#16a34a;">{{ paid_bills }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Pending Bills</div>
+        <div class="stat-value" style="color:#dc2626;">{{ pending_bills }}</div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-head"><h3>Billing Records</h3></div>
+    <div class="card-body" style="padding:0;">
+        {% if bills %}
+        <table class="tbl">
+            <thead>
+                <tr>
+                    <th>Invoice</th>
+                    <th>Client</th>
+                    <th>Pharmacist</th>
+                    <th>Medicine</th>
+                    <th>Qty</th>
+                    <th>Total</th>
+                    <th>Status</th>
+                    <th>Created</th>
+                    <th>Paid At</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for b in bills %}
+                <tr>
+                    <td>{{ b[1] }}</td>
+                    <td>{{ b[2] }}</td>
+                    <td>{{ b[3] }}</td>
+                    <td>{{ b[4] }}</td>
+                    <td>{{ b[5] }}</td>
+                    <td>{{ b[6] }}</td>
+                    <td>
+                        {% if b[7] == 'paid' %}
+                        <span class="badge badge-approved">Paid</span>
+                        {% else %}
+                        <span class="badge badge-pending">{{ b[7] }}</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ b[8] }}</td>
+                    <td>{{ b[9] }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div style="padding:28px;text-align:center;color:var(--slate);">No billing records yet.</div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

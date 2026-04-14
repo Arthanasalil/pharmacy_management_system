@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+{% block title %}Book Appointment - PharmaC{% endblock %}
+
+{% block sidebar %}
+{% set active_page = 'appointments' %}
+{% include 'dashboards/_client_sidebar.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>Book Appointment</h2>
+    <p>Submit your appointment request to a doctor.</p>
+</div>
+
+{% if success %}
+<div class="card" style="border-color:#86efac;background:#f0fdf4;">
+    <div class="card-body" style="color:#166534;font-weight:600;">Appointment request submitted successfully.</div>
+</div>
+{% endif %}
+
+<div class="card" style="max-width:860px;">
+    <div class="card-head"><h3>Appointment Form</h3></div>
+    <div class="card-body">
+        <form method="POST" action="{{ url_for('user.client_book_appointment') }}">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+                <div>
+                    <label style="font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--slate);font-weight:600;">Doctor</label>
+                    <select name="doctorId" required style="margin-top:6px;width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;">
+                        <option value="">Select doctor</option>
+                        {% for d in doctors %}
+                        <option value="{{ d[0] }}">{{ d[1] }} - {{ d[2] }} ({{ d[3] }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label style="font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--slate);font-weight:600;">Appointment Date</label>
+                    <input type="date" name="appointmentDate" required style="margin-top:6px;width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;">
+                </div>
+            </div>
+            <div style="margin-top:14px;">
+                <label style="font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--slate);font-weight:600;">Reason</label>
+                <input type="text" name="reason" placeholder="Reason for visit" style="margin-top:6px;width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;">
+            </div>
+            
+            <div style="margin-top:16px;display:flex;gap:10px;">
+                <button type="submit" class="btn btn-teal">Submit Appointment</button>
+                <a href="{{ url_for('user.client_dashboard') }}" class="btn btn-ghost">Back</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-head">
+        <h3>My Appointment Requests</h3>
+    </div>
+    <div class="card-body" style="padding:0;">
+        {% if appointments %}
+        <table class="tbl">
+            <thead>
+                <tr><th>#</th><th>Doctor</th><th>Date</th><th>Time</th><th>Status</th></tr>
+            </thead>
+            <tbody>
+                {% for a in appointments %}
+                <tr>
+                    <td style="color:var(--slate);font-size:.82rem;">{{ a[0] }}</td>
+                    <td style="font-weight:500;">Dr. {{ a[1] }}</td>
+                    <td style="color:var(--slate);">{{ a[2] }}</td>
+                    <td style="color:var(--slate);">{{ a[3] }}</td>
+                    <td>
+                        {% if a[4] == 'confirmed' %}
+                            <span class="badge badge-approved">Confirmed</span>
+                        {% elif a[4] == 'pending' %}
+                            <span class="badge badge-pending">Pending</span>
+                        {% else %}
+                            <span class="badge">{{ a[4].title() }}</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div style="padding:24px;color:var(--slate);text-align:center;">No appointments booked yet.</div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,28 @@
+{% set active_page = active_page|default('dashboard') %}
+<div class="nav-section-label">Overview</div>
+<a href="{{ url_for('user.pharmacist_dashboard') }}" class="nav-link {{ 'active' if active_page == 'dashboard' else '' }}">
+    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+    Dashboard
+</a>
+
+<div class="nav-section-label">Prescriptions</div>
+<a href="{{ url_for('user.pharmacist_pending_queue') }}" class="nav-link {{ 'active' if active_page == 'pending_queue' else '' }}">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+    Pending Queue
+</a>
+<a href="{{ url_for('user.pharmacist_dispensed') }}" class="nav-link {{ 'active' if active_page == 'dispensed' else '' }}">
+    <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+    Dispensed
+</a>
+
+<div class="nav-section-label">Inventory</div>
+<a href="{{ url_for('user.pharmacist_inventory') }}" class="nav-link {{ 'active' if active_page == 'inventory' else '' }}">
+    <svg viewBox="0 0 24 24"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18"/></svg>
+    Stock Levels
+</a>
+
+<div class="nav-section-label">Billing</div>
+<a href="{{ url_for('user.pharmacist_billing') }}" class="nav-link {{ 'active' if active_page == 'billing' else '' }}">
+    <svg viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+    Process Bills
+</a>

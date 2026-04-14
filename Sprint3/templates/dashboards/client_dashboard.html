@@ -1,0 +1,136 @@
+{% extends 'base.html' %}
+{% block title %}My Dashboard - PharmaC{% endblock %}
+{% block page_title %}My Dashboard{% endblock %}
+
+{% block sidebar %}
+{% set active_page = 'dashboard' %}
+{% include 'dashboards/_client_sidebar.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>Hello, {{ session.get('name', 'there') }}</h2>
+    <p>Track your prescriptions, orders, and health records all in one place.</p>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon-wrap" style="background:#dbeafe;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#1d4ed8" stroke-width="1.8"><path d="M9 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8l-5-5H9ZM13 3v5h5M9 13h6M9 17h4"/></svg>
+        </div>
+        <div class="stat-label">Active Prescriptions</div>
+        <div class="stat-value" style="color:#1d4ed8;">{{ active_prescriptions or 0 }}</div>
+        <div class="stat-sub" style="color:#1d4ed8;">Currently active</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon-wrap" style="background:#fef3c7;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </div>
+        <div class="stat-label">Pending Orders</div>
+        <div class="stat-value" style="color:#d97706;">{{ pending_orders or 0 }}</div>
+        <div class="stat-sub" style="color:#d97706;">Being processed</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon-wrap" style="background:#dcfce7;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="1.8"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <div class="stat-label">Completed Orders</div>
+        <div class="stat-value" style="color:#16a34a;">{{ completed_orders or 0 }}</div>
+        <div class="stat-sub" style="color:#16a34a;">Successfully filled</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="1.8"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+        </div>
+        <div class="stat-label">Total Bills</div>
+        <div class="stat-value">{{ total_bills or 0 }}</div>
+        <div class="stat-sub">All time</div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-head">
+        <h3>My Active Prescriptions</h3>
+        <a href="{{ url_for('user.client_active_prescriptions') }}" class="btn btn-ghost">View All</a>
+    </div>
+    <div class="card-body" style="padding:0;">
+        {% if my_prescriptions %}
+        <table class="tbl">
+            <thead>
+                <tr><th>#</th><th>Doctor</th><th>Document</th><th>Date</th><th>Status</th></tr>
+            </thead>
+            <tbody>
+                {% for p in my_prescriptions %}
+                <tr>
+                    <td style="color:var(--slate);font-size:.82rem;">{{ p[0] }}</td>
+                    <td style="font-weight:500;">Dr. {{ p[1] }}</td>
+                    <td>{{ p[2] }}</td>
+                    <td style="color:var(--slate);">{{ p[3] }}</td>
+                    <td><span class="badge badge-{{ p[4] }}">{{ p[4].replace('_', ' ').title() }}</span></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state">
+            <svg viewBox="0 0 24 24"><path d="M9 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8l-5-5H9ZM13 3v5h5"/></svg>
+            <p class="empty-title">No active prescriptions</p>
+            <p class="empty-sub">Your prescriptions from doctors will appear here.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-head">
+        <h3>Recent Orders</h3>
+        <a href="{{ url_for('user.client_orders') }}" class="btn btn-ghost">View All</a>
+    </div>
+    <div class="card-body" style="padding:0;">
+        {% if my_orders %}
+        <table class="tbl">
+            <thead>
+                <tr><th>#</th><th>Pharmacy</th><th>Date</th><th>Status</th></tr>
+            </thead>
+            <tbody>
+                {% for o in my_orders %}
+                <tr>
+                    <td style="color:var(--slate);font-size:.82rem;">{{ o[0] }}</td>
+                    <td style="font-weight:500;">{{ o[1] }}</td>
+                    <td style="color:var(--slate);">{{ o[3] }}</td>
+                    <td><span class="badge badge-{{ o[2] }}">{{ o[2].replace('_', ' ').title() }}</span></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state">
+            <svg viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+            <p class="empty-title">No orders yet</p>
+            <p class="empty-sub">Your medicine orders will appear here.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_head %}
+<style>
+    .empty-state {
+        padding: 50px;
+        text-align: center;
+        color: var(--slate);
+    }
+    .empty-state svg {
+        width: 44px;
+        height: 44px;
+        stroke: var(--line);
+        fill: none;
+        stroke-width: 1.5;
+        display: block;
+        margin: 0 auto 14px;
+    }
+    .empty-title { font-weight: 500; color: var(--navy); margin-bottom: 4px; }
+    .empty-sub { font-size: .85rem; }
+</style>
+{% endblock %}

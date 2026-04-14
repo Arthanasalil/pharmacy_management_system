@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+{% block title %}Orders - PharmaCare{% endblock %}
+{% block page_title %}Orders{% endblock %}
+{% set active_page = active_page|default('orders') %}
+
+{% block sidebar %}
+<div class="nav-section-label">Overview</div>
+<a href="{{ url_for('user.pharmacy_admin_dashboard') }}" class="nav-link {{ 'active' if active_page == 'dashboard' else '' }}">
+    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+    Dashboard
+</a>
+
+<div class="nav-section-label">Staff</div>
+<a href="{{ url_for('user.pharmacy_admin_manage_staff') }}" class="nav-link {{ 'active' if active_page == 'manage_staff' else '' }}">
+    <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    Manage Staff
+</a>
+
+<div class="nav-section-label">Inventory</div>
+<a href="{{ url_for('user.pharmacy_admin_inventory') }}" class="nav-link {{ 'active' if active_page == 'inventory' else '' }}">
+    <svg viewBox="0 0 24 24"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18"/></svg>
+    Stock Management
+</a>
+<a href="{{ url_for('user.pharmacy_admin_orders') }}" class="nav-link {{ 'active' if active_page == 'orders' else '' }}">
+    <svg viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+    Orders
+</a>
+
+<div class="nav-section-label">Finance</div>
+<a href="{{ url_for('user.pharmacy_admin_sales_reports') }}" class="nav-link {{ 'active' if active_page == 'sales_reports' else '' }}">
+    <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+    Sales Reports
+</a>
+<a href="{{ url_for('user.pharmacy_admin_billing_overview') }}" class="nav-link {{ 'active' if active_page == 'billing_overview' else '' }}">
+    <svg viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+    Billing Overview
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>Reorder Queue</h2>
+    <p>Medicines at or below minimum stock level for your pharmacy.</p>
+</div>
+
+{% if reorder_success %}
+<div class="card" style="border-color:#86efac;background:#f0fdf4;">
+    <div class="card-body" style="color:#166534;font-weight:600;">{{ reorder_success }}</div>
+</div>
+{% endif %}
+{% if reorder_error %}
+<div class="card" style="border-color:#fecaca;background:#fef2f2;">
+    <div class="card-body" style="color:#991b1b;font-weight:600;">{{ reorder_error }}</div>
+</div>
+{% endif %}
+
+<div class="stats-grid" style="margin-bottom:20px;">
+    <div class="stat-card">
+        <div class="stat-label">Items To Reorder</div>
+        <div class="stat-value">{{ reorder_count }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Critical (Zero Stock)</div>
+        <div class="stat-value" style="color:#dc2626;">{{ critical_count }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Estimated Cost</div>
+        <div class="stat-value">{{ estimated_cost }}</div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-head">
+        <h3>Low Stock Order List</h3>
+    </div>
+    <div class="card-body" style="padding:0;">
+        {% if reorder_items %}
+        <table class="tbl">
+            <thead>
+                <tr>
+                    <th>Medicine</th>
+                    <th>Content</th>
+                    <th>Brand</th>
+                    <th>Current Stock</th>
+                    <th>Min Stock</th>
+                    <th>Shortage</th>
+                    <th>Suggested Order Qty</th>
+                    <th>Unit Price</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in reorder_items %}
+                <tr>
+                    <td style="font-weight:600;">{{ item[1] }}</td>
+                    <td>{{ item[2] }}</td>
+                    <td>{{ item[3] }}</td>
+                    <td>{{ item[4] }}</td>
+                    <td>{{ item[5] }}</td>
+                    <td>{{ item[7] }}</td>
+                    <td>{{ item[8] }}</td>
+                    <td>{{ item[6] }}</td>
+                    <td>
+                        <form method="post" action="{{ url_for('user.pharmacy_admin_reorder_medicine', medicine_id=item[0]) }}">
+                            <button type="submit" class="btn btn-teal">Reorder</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div style="padding:28px;text-align:center;color:var(--slate);">No medicines currently need reorder.</div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

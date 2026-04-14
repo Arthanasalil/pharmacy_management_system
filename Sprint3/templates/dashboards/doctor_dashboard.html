@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% block title %}Doctor Dashboard - PharmaC{% endblock %}
+{% block page_title %}Doctor Dashboard{% endblock %}
+
+{% block sidebar %}
+{% set active_page = 'dashboard' %}
+{% include 'dashboards/_doctor_sidebar.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>Good day, Dr. {{ session.get('name', 'Doctor') }}</h2>
+    <p>Manage your prescriptions and patient workflow from your dashboard.</p>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon-wrap" style="background:#dbeafe;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#1d4ed8" stroke-width="1.8"><path d="M9 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8l-5-5H9ZM13 3v5h5M9 13h6M9 17h4"/></svg>
+        </div>
+        <div class="stat-label">Total Prescriptions</div>
+        <div class="stat-value" style="color:#1d4ed8;">{{ total_prescriptions or 0 }}</div>
+        <div class="stat-sub" style="color:#1d4ed8;">Issued by you</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon-wrap" style="background:#fef3c7;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </div>
+        <div class="stat-label">Pending</div>
+        <div class="stat-value" style="color:#d97706;">{{ pending_prescriptions or 0 }}</div>
+        <div class="stat-sub" style="color:#d97706;">Awaiting dispensing</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon-wrap" style="background:#dcfce7;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="1.8"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <div class="stat-label">Dispensed</div>
+        <div class="stat-value" style="color:#16a34a;">{{ dispensed_prescriptions or 0 }}</div>
+        <div class="stat-sub" style="color:#16a34a;">Successfully filled</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+        </div>
+        <div class="stat-label">My Patients</div>
+        <div class="stat-value">{{ total_patients or 0 }}</div>
+        <div class="stat-sub">Registered / booked clients</div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-head">
+        <h3>Recent Prescriptions</h3>
+    </div>
+    <div class="card-body" style="padding:0;">
+        {% if recent_prescriptions %}
+        <table class="tbl">
+            <thead><tr><th>#</th><th>Patient</th><th>Document</th><th>Date</th><th>Status</th></tr></thead>
+            <tbody>
+                {% for p in recent_prescriptions %}
+                <tr>
+                    <td style="color:var(--slate);font-size:.82rem;">{{ p[0] }}</td>
+                    <td style="font-weight:500;">{{ p[1] }}</td>
+                    <td>{{ p[2] }}</td>
+                    <td style="color:var(--slate);">{{ p[3] }}</td>
+                    <td><span class="badge badge-{{ p[4] }}">{{ p[4].replace('_', ' ').title() }}</span></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div style="padding:50px;text-align:center;color:var(--slate);">No prescriptions yet.</div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

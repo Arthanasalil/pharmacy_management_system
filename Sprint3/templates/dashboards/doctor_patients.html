@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block title %}My Patients - PharmaC{% endblock %}
+
+{% block sidebar %}
+{% set active_page = 'patients' %}
+{% include 'dashboards/_doctor_sidebar.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>My Patients</h2>
+    <p>Clients who have booked appointments or received prescriptions from you.</p>
+</div>
+
+<div class="card">
+    <div class="card-head"><h3>Registered / Appointment Patients</h3></div>
+    <div class="card-body" style="padding:0;">
+        {% if patient_list %}
+        <table class="tbl">
+            <thead><tr><th>#</th><th>Name</th><th>Email</th><th>Phone</th></tr></thead>
+            <tbody>
+                {% for p in patient_list %}
+                <tr>
+                    <td style="color:var(--slate);font-size:.82rem;">{{ p[0] }}</td>
+                    <td style="font-weight:500;">{{ p[1] }}</td>
+                    <td style="color:var(--slate);">{{ p[2] }}</td>
+                    <td style="color:var(--slate);">{{ p[3] }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div style="padding:48px;text-align:center;color:var(--slate);">No patients found yet.</div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

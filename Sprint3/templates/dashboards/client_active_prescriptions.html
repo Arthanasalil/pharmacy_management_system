@@ -1,0 +1,198 @@
+{% extends 'base.html' %}
+{% block title %}Active Prescriptions - PharmaC{% endblock %}
+
+{% block sidebar %}
+{% set active_page = 'active_prescriptions' %}
+{% include 'dashboards/_client_sidebar.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>Active Prescriptions</h2>
+    <p>Prescriptions currently in progress.</p>
+</div>
+
+{% if route_success %}
+<div class="alert success-alert">
+    Prescription sent to pharmacy successfully.
+    {% if route_message %}{{ route_message }}{% endif %}
+</div>
+{% endif %}
+
+{% if route_error %}
+<div class="alert error-alert">
+    {% if route_message %}{{ route_message }}{% else %}Routing failed.{% endif %}
+</div>
+{% endif %}
+
+
+<div class="card" style="margin-bottom:14px;">
+    <div class="card-body">
+        <form method="post" action="{{ url_for('user.client_upload_prescription') }}" enctype="multipart/form-data" class="upload-form">
+            
+            <div>
+                <label>Prescription Document</label>
+                <input type="file" name="prescription_file" required>
+            </div>
+
+          
+
+            <div style="display:flex;align-items:end;">
+                <button class="btn btn-teal" type="submit">Upload</button>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+<div class="card">
+<div class="card-body" style="padding:0;">
+
+{% if prescriptions %}
+<table class="tbl">
+<thead>
+<tr>
+    <th>#</th>
+    <th>Doctor</th>
+    <th>Medicine</th>
+    <th>Document</th>
+    <th>Date</th>
+    <th>Status</th>
+    <th>Pharmacy</th>
+    <th>Pharmacist</th>
+    <th>Action</th>
+</tr>
+</thead>
+
+<tbody>
+{% for p in prescriptions %}
+<tr>
+
+    <!-- ID -->
+    <td>{{ p[0] }}</td>
+
+    <!-- Doctor -->
+    <td>
+        {% if p[1] and p[1].lower().startswith('dr.') %}
+            {{ p[1] }}
+        {% else %}
+            Dr. {{ p[1] }}
+        {% endif %}
+    </td>
+
+   
+    <td>
+        {% if p[5] %}
+            {{ p[5] }}
+        {% else %}
+            <span style="color:var(--slate);font-style:italic;">
+                Not specified
+            </span>
+        {% endif %}
+    </td>
+
+    <!-- Document -->
+    <td>
+        {% if p[2] and p[2] != 'Not Uploaded' %}
+            <a class="btn btn-ghost"
+               href="{{ url_for('user.client_view_prescription_document', prescription_id=p[0]) }}"
+               target="_blank">View</a>
+        {% else %}
+            -
+        {% endif %}
+    </td>
+
+    <!-- Date -->
+    <td>{{ p[3] }}</td>
+
+    <!-- ✅ STATUS FIX -->
+    <td>
+        {% set status = p[4]|lower %}
+
+        {% if status == 'pending' %}
+            <span class="badge badge-pending">Pending</span>
+        {% elif status == 'routed' %}
+            <span class="badge badge-routed">Routed</span>
+        {% elif status == 'validated' %}
+            <span class="badge badge-validated">Validated</span>
+        {% elif status == 'dispensed' %}
+            <span class="badge badge-dispensed">Dispensed</span>
+        {% elif status == 'cancelled' %}
+            <span class="badge badge-cancelled">Cancelled</span>
+        {% else %}
+            <span class="badge">{{ status.title() }}</span>
+        {% endif %}
+    </td>
+
+    <!-- Pharmacy -->
+    <td>{{ p[7] }}</td>
+
+    <!-- Pharmacist -->
+    <td>{{ p[8] }}</td>
+
+    <!-- Action -->
+    <td>
+        <div class="action-wrap">
+            <span style="color:var(--slate);font-size:.82rem;">
+                {% if status == 'pending' %}Pending{% else %}Sent{% endif %}
+            </span>
+
+            <a class="btn btn-ghost"
+               href="{{ url_for('user.client_download_prescription', prescription_id=p[0], format='txt') }}">
+               TXT
+            </a>
+
+            <a class="btn btn-ghost"
+               href="{{ url_for('user.client_download_prescription', prescription_id=p[0], format='pdf') }}">
+               PDF
+            </a>
+        </div>
+    </td>
+
+</tr>
+{% endfor %}
+</tbody>
+</table>
+
+{% else %}
+<div style="padding:48px;text-align:center;color:var(--slate);">
+    No active prescriptions.
+</div>
+{% endif %}
+
+</div>
+</div>
+{% endblock %}
+
+{% block extra_head %}
+<style>
+.alert { border-radius: 12px; padding: 12px 14px; margin-bottom: 14px; font-size: .9rem; }
+.success-alert { background:#ecfdf5; border:1px solid #86efac; color:#166534; }
+.error-alert { background:#fef2f2; border:1px solid #fecaca; color:#991b1b; }
+
+.action-wrap { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+
+.upload-form { display:grid; grid-template-columns: 1fr 1fr auto; gap:10px; align-items:end; }
+
+.upload-form label { display:block; margin-bottom:6px; color:var(--slate); font-size:.82rem; }
+.upload-form input { width:100%; border:1px solid var(--line); border-radius:10px; padding:9px 10px; font-size:.88rem; }
+
+.badge {
+    display:inline-block;
+    padding:3px 10px;
+    border-radius:20px;
+    font-size:.78rem;
+    font-weight:600;
+}
+
+.badge-pending  { background:#fef9c3; color:#854d0e; }
+.badge-routed   { background:#dbeafe; color:#1e40af; }
+.badge-validated{ background:#dcfce7; color:#166534; }
+.badge-dispensed{ background:#e0e7ff; color:#3730a3; }
+.badge-cancelled{ background:#fee2e2; color:#991b1b; }
+
+@media (max-width: 900px) {
+    .upload-form { grid-template-columns: 1fr; }
+}
+</style>
+{% endblock %}

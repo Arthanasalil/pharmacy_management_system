@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+{% block title %}All Users — PharmaCare{% endblock %}
+{% block page_title %}All Users{% endblock %}
+
+{% block sidebar %}
+<div class="nav-section-label">Overview</div>
+<a href="{{ url_for('user.system_admin_dashboard') }}" class="nav-link">
+    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+    Dashboard
+</a>
+
+<div class="nav-section-label">User Management</div>
+<a href="{{ url_for('user.view_users') }}" class="nav-link">
+    <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    Approve Users
+</a>
+<a href="{{ url_for('user.all_users') }}" class="nav-link active">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+    All Users
+</a>
+
+<div class="nav-section-label">System</div>
+<a href="{{ url_for('user.view_pharmacies') }}" class="nav-link">
+    <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+    Manage Pharmacies
+</a>
+
+<div class="nav-section-label">Reports</div>
+<a href="{{ url_for('system_report_view') }}" class="nav-link">
+    <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+    System Reports
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>All Users</h2>
+    <p>Complete list of every registered user in the system.</p>
+</div>
+
+{% if delete_success %}
+<div class="alert success-alert">User deleted successfully.</div>
+{% endif %}
+{% if delete_error %}
+<div class="alert error-alert">{{ delete_error }}</div>
+{% endif %}
+
+<div class="card">
+    <div class="card-head">
+        <h3>User Registry</h3>
+        <span style="font-size:.85rem;color:var(--slate);">{{ users|length }} total</span>
+    </div>
+    <div class="card-body" style="padding:0;">
+        {% if users %}
+        <table class="tbl">
+            <thead>
+                <tr>
+                    <th>#</th><th>Full Name</th><th>Email</th><th>Role</th><th>Status</th><th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for u in users %}
+                <tr>
+                    <td style="color:var(--slate);font-size:.82rem;">{{ u[0] }}</td>
+                    <td style="font-weight:500;">{{ u[1] }}</td>
+                    <td style="color:var(--slate);">{{ u[2] }}</td>
+                    <td><span class="badge badge-{{ u[3] }}">{{ u[3].replace('_',' ').title() }}</span></td>
+                    <td>
+                        <span class="badge badge-{{ u[4] }}">
+                            {{ u[4].title() }}
+                        </span>
+                    </td>
+                    <td>
+                        <form method="post" action="{{ url_for('user.delete_user', user_id=u[0]) }}"
+                              onsubmit="return confirm('Delete this user permanently?');">
+                            <button type="submit" class="btn btn-red">
+                                <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                                Delete
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div style="padding:60px;text-align:center;color:var(--slate);">
+            <p>No users found.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_head %}
+<style>
+    .alert { border-radius: 12px; padding: 12px 14px; margin-bottom: 14px; font-size: .9rem; }
+    .success-alert { background:#ecfdf5; border:1px solid #86efac; color:#166534; }
+    .error-alert { background:#fef2f2; border:1px solid #fecaca; color:#991b1b; }
+</style>
+{% endblock %}

@@ -1,0 +1,279 @@
+{% extends 'base.html' %}
+{% block title %}System Reports — PharmaCare{% endblock %}
+{% block page_title %}System Reports{% endblock %}
+
+{% block sidebar %}
+<div class="nav-section-label">Overview</div>
+<a href="{{ url_for('user.system_admin_dashboard') }}" class="nav-link">
+    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+    Dashboard
+</a>
+
+<div class="nav-section-label">User Management</div>
+<a href="{{ url_for('user.view_users') }}" class="nav-link">
+    <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    Approve Users
+</a>
+<a href="{{ url_for('user.all_users') }}" class="nav-link">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+    All Users
+</a>
+
+<div class="nav-section-label">System</div>
+<a href="{{ url_for('user.view_pharmacies') }}" class="nav-link">
+    <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    Manage Pharmacies
+</a>
+
+<div class="nav-section-label">Reports</div>
+<a href="{{ url_for('system_report_view') }}" class="nav-link active">
+    <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+    System Reports
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>System Reports</h2>
+    <p>Live system usage and module performance overview.</p>
+    <div class="card" style="margin-top:14px;">
+        <div class="card-body" style="padding:14px 16px;">
+            <div style="font-weight:600; margin-bottom:6px;">System Admin Responsibilities</div>
+            <div style="color:var(--slate); display:grid; gap:6px;">
+                <div>Configures system settings, access safety rules, and operational policies.</div>
+                <div>Monitors system usage, security logs, and overall platform performance.</div>
+                <div>Generates comprehensive reports on prescriptions, inventory usage, billing, and system activity.</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="card">
+    <div class="card-head">
+        <h3>Pharmacy Sales Summary (Last 30 Days)</h3>
+        <span style="font-size:.85rem;color:var(--slate);">
+            {{ sales_report.period.from if sales_report.success else '—' }}
+            to
+            {{ sales_report.period.to if sales_report.success else '—' }}
+        </span>
+    </div>
+    <div class="card-body" style="border-bottom:1px solid var(--line);">
+        <form method="get" action="{{ url_for('system_report_view') }}" style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+            <label style="font-size:.8rem;color:var(--slate);">From</label>
+            <input type="date" name="sales_from" value="{{ sales_from or '' }}" class="form-control" style="max-width:180px;">
+            <label style="font-size:.8rem;color:var(--slate);">To</label>
+            <input type="date" name="sales_to" value="{{ sales_to or '' }}" class="form-control" style="max-width:180px;">
+            <button type="submit" class="btn btn-ghost">Apply</button>
+            <a href="{{ url_for('system_report_view') }}" class="btn btn-ghost">Reset</a>
+        </form>
+    </div>
+    {% if sales_report.note and not sales_report.success %}
+    <div class="card-body">
+        <div style="color:var(--slate);">{{ sales_report.note }}</div>
+    </div>
+    {% endif %}
+    <div class="card-body">
+        <div class="stats-grid" style="margin-bottom:0;">
+            <div class="stat-card">
+                <div class="stat-label">Total Sales</div>
+                <div class="stat-value">₹{{ '%.2f'|format(sales_report.totals.total_sales if sales_report.success else 0) }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Orders</div>
+                <div class="stat-value">{{ sales_report.totals.order_count if sales_report.success else 0 }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Avg Ticket</div>
+                <div class="stat-value">₹{{ '%.2f'|format(sales_report.totals.avg_ticket if sales_report.success else 0) }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Net Revenue</div>
+                <div class="stat-value">₹{{ '%.2f'|format(sales_report.totals.net_revenue if sales_report.success else 0) }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="card-body" style="display:grid; gap:8px; border-top:1px solid var(--line);">
+        {% if sales_report.success and sales_report.data %}
+            {% for s in sales_report.data %}
+            <div style="display:grid; grid-template-columns:200px 1fr 90px; gap:10px; align-items:center;">
+                <div style="font-weight:600;">{{ s.pharmacy_name or s.pharmacy_id }}</div>
+                <div style="height:8px; background:#eef2f7; border-radius:999px; overflow:hidden;">
+                    <div style="height:8px; background:linear-gradient(90deg,#0ea5e9,#22c55e); width:{{ (s.total_sales * 100 / max_sales)|round(0) if max_sales else 0 }}%;"></div>
+                </div>
+                <div style="text-align:right; color:var(--slate); font-size:.85rem;">â‚¹{{ '%.2f'|format(s.total_sales) }}</div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div style="color:var(--slate);">No sales data found.</div>
+        {% endif %}
+    </div>
+    <div class="card-body" style="padding:0;">
+        <table class="tbl">
+            <thead>
+                <tr>
+                    <th>Pharmacy</th>
+                    <th>Total Sales</th>
+                    <th>Orders</th>
+                    <th>Avg Ticket</th>
+                    <th>Net Revenue</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if sales_report.success and sales_report.data %}
+                    {% for s in sales_report.data %}
+                    <tr>
+                        <td style="font-weight:600;">{{ s.pharmacy_name or s.pharmacy_id }}</td>
+                        <td>₹{{ '%.2f'|format(s.total_sales) }}</td>
+                        <td>{{ s.order_count }}</td>
+                        <td>₹{{ '%.2f'|format(s.avg_ticket) }}</td>
+                        <td>₹{{ '%.2f'|format(s.net_revenue) }}</td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                <tr>
+                    <td colspan="5" style="text-align:center;color:var(--slate);padding:18px;">No sales data found.</td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div style="display:grid; grid-template-columns:1fr 1fr; gap:18px;">
+    <div class="card" style="margin-bottom:0;">
+        <div class="card-head">
+            <h3>Inventory Health by Pharmacy</h3>
+            <span style="font-size:.85rem;color:var(--slate);">{{ inventory_report.total if inventory_report.success else 0 }} pharmacies</span>
+        </div>
+        <div class="card-body" style="display:grid; gap:8px; border-bottom:1px solid var(--line);">
+            {% if inventory_report.success and inventory_report.data %}
+                {% for i in inventory_report.data %}
+                <div style="display:grid; grid-template-columns:200px 1fr 60px; gap:10px; align-items:center;">
+                    <div style="font-weight:600;">{{ i.pharmacy_name or i.pharmacy_id }}</div>
+                    <div style="height:8px; background:#eef2f7; border-radius:999px; overflow:hidden;">
+                        <div style="height:8px; background:linear-gradient(90deg,#22c55e,#14b8a6); width:{{ (i.fill_rate * 100 / max_fill)|round(0) if max_fill else 0 }}%;"></div>
+                    </div>
+                    <div style="text-align:right; color:var(--slate); font-size:.85rem;">{{ i.fill_rate }}%</div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div style="color:var(--slate);">No inventory data found.</div>
+            {% endif %}
+        </div>
+        {% if inventory_report.note and not inventory_report.success %}
+        <div class="card-body">
+            <div style="color:var(--slate);">{{ inventory_report.note }}</div>
+        </div>
+        {% endif %}
+        <div class="card-body" style="padding:0;">
+            <table class="tbl">
+                <thead>
+                    <tr>
+                        <th>Pharmacy</th>
+                        <th>Total Items</th>
+                        <th>Low Stock</th>
+                        <th>Out of Stock</th>
+                        <th>Stock Value</th>
+                        <th>Fill Rate</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if inventory_report.success and inventory_report.data %}
+                        {% for i in inventory_report.data %}
+                        <tr>
+                            <td style="font-weight:600;">{{ i.pharmacy_name or i.pharmacy_id }}</td>
+                            <td>{{ i.total_items }}</td>
+                            <td>{{ i.low_stock }}</td>
+                            <td>{{ i.out_of_stock }}</td>
+                            <td>₹{{ '%.2f'|format(i.stock_value) }}</td>
+                            <td>{{ i.fill_rate }}%</td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                    <tr>
+                        <td colspan="6" style="text-align:center;color:var(--slate);padding:18px;">No inventory data found.</td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="card" style="margin-bottom:0;">
+        <div class="card-head">
+            <h3>User Activity Summary</h3>
+        </div>
+        <div class="card-body">
+            {% if user_report.success %}
+            <div style="display:grid; gap:12px;">
+                <div style="display:flex;justify-content:space-between;"><span>Total Users</span><strong>{{ user_report.summary.total }}</strong></div>
+                <div style="display:flex;justify-content:space-between;"><span>Active</span><strong>{{ user_report.summary.active }}</strong></div>
+                <div style="display:flex;justify-content:space-between;"><span>Inactive</span><strong>{{ user_report.summary.inactive }}</strong></div>
+                {% if user_report.summary.by_role %}
+                <div style="border-top:1px solid var(--line);padding-top:10px;display:grid;gap:6px;">
+                    {% for role, count in user_report.summary.by_role.items() %}
+                    <div style="display:flex;justify-content:space-between;">
+                        <span style="color:var(--slate);text-transform:capitalize;">{{ role.replace('_', ' ') }}</span>
+                        <strong>{{ count }}</strong>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            {% else %}
+            <div style="color:var(--slate);">{{ user_report.note or 'Unable to load user summary.' }}</div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-head">
+        <h3>Prescription Activity (Last 30 Days)</h3>
+        <span style="font-size:.85rem;color:var(--slate);">
+            {{ prescription_report.period.from if prescription_report.success else 'â€”' }}
+            to
+            {{ prescription_report.period.to if prescription_report.success else 'â€”' }}
+        </span>
+    </div>
+    {% if prescription_report.note and not prescription_report.success %}
+    <div class="card-body">
+        <div style="color:var(--slate);">{{ prescription_report.note }}</div>
+    </div>
+    {% endif %}
+    <div class="card-body" style="display:grid; grid-template-columns:1fr 1fr; gap:18px;">
+        <div>
+            <div style="font-weight:600; margin-bottom:10px;">Status Summary</div>
+            {% if prescription_report.success and prescription_report.summary.by_status %}
+                {% for status, count in prescription_report.summary.by_status.items() %}
+                <div style="display:grid; grid-template-columns:140px 1fr 60px; gap:10px; align-items:center; margin-bottom:8px;">
+                    <div style="text-transform:capitalize;">{{ status.replace('_', ' ') }}</div>
+                    <div style="height:8px; background:#eef2f7; border-radius:999px; overflow:hidden;">
+                        <div style="height:8px; background:linear-gradient(90deg,#6366f1,#22c55e); width:{{ (count * 100 / prescription_report.summary.total)|round(0) if prescription_report.summary.total else 0 }}%;"></div>
+                    </div>
+                    <div style="text-align:right; color:var(--slate); font-size:.85rem;">{{ count }}</div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div style="color:var(--slate);">No prescription data found.</div>
+            {% endif %}
+        </div>
+        <div>
+            <div style="font-weight:600; margin-bottom:10px;">Daily Trend (Last 7 Days)</div>
+            {% if prescription_report.success and prescription_report.daily %}
+                {% for d in prescription_report.daily %}
+                <div style="display:grid; grid-template-columns:120px 1fr 50px; gap:10px; align-items:center; margin-bottom:8px;">
+                    <div style="color:var(--slate); font-size:.85rem;">{{ d.day }}</div>
+                    <div style="height:8px; background:#eef2f7; border-radius:999px; overflow:hidden;">
+                        <div style="height:8px; background:linear-gradient(90deg,#f97316,#ef4444); width:{{ (d.count * 100 / max_daily_rx)|round(0) if max_daily_rx else 0 }}%;"></div>
+                    </div>
+                    <div style="text-align:right; color:var(--slate); font-size:.85rem;">{{ d.count }}</div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div style="color:var(--slate);">No recent prescriptions.</div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

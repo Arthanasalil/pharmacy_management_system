@@ -1,0 +1,12 @@
+Flask
+Flask-MySQLdb
+Flask-Login
+boto3
+python-dotenv
+mysqlclient
+SQLAlchemy
+PyMySQL
+openpyxl
+fpdf2
+psutil
+PyPDF2

@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block title %}Billing & Payments - PharmaC{% endblock %}
+{% block sidebar %}
+{% set active_page = 'billing_payments' %}
+{% include 'dashboards/_client_sidebar.html' %}
+{% endblock %}
+{% block content %}
+<div class="page-header"><h2>Billing & Payments</h2><p>Your invoices and payment history.</p></div>
+{% if pay_success %}
+<div style="padding:12px 14px;border:1px solid #86efac;background:#ecfdf5;color:#166534;border-radius:12px;margin-bottom:12px;">{{ pay_success }}</div>
+{% endif %}
+{% if pay_error %}
+<div style="padding:12px 14px;border:1px solid #fecaca;background:#fef2f2;color:#991b1b;border-radius:12px;margin-bottom:12px;">{{ pay_error }}</div>
+{% endif %}
+<div class="card"><div class="card-body">
+{% if bills %}
+<table class="tbl"><thead><tr><th>Invoice #</th><th>Medicine</th><th>Qty</th><th>GST</th><th>Total</th><th>Status</th><th>Method</th><th>Created</th><th>Paid At</th><th>Pay</th><th>Download</th></tr></thead><tbody>
+{% for b in bills %}<tr><td>{{ b[1] }}</td><td>{{ b[2] }}</td><td>{{ b[3] }}</td><td>{{ b[4] }}%</td><td>{{ b[5] }}</td><td>{{ b[6] }}</td><td>{{ b[7] }}</td><td>{{ b[8] }}</td><td>{{ b[9] }}</td><td>{% if b[6] != 'paid' %}<form method="post" action="{{ url_for('user.client_pay_bill', bill_id=b[0]) }}" style="display:flex;gap:6px;align-items:center;"><select name="payment_method" required><option value="">Method</option><option value="upi">UPI</option><option value="card">Card</option><option value="netbanking">NetBanking</option><option value="cash">Cash</option></select><button class="btn btn-teal" type="submit">Pay</button></form>{% else %}<span style="color:#16a34a;font-weight:600;">Paid</span>{% endif %}</td><td style="white-space:nowrap;"><a class="btn btn-ghost" href="{{ url_for('user.client_download_bill', bill_id=b[0], format='pdf') }}">PDF</a> <a class="btn btn-ghost" href="{{ url_for('user.client_download_bill', bill_id=b[0], format='txt') }}">TXT</a></td></tr>{% endfor %}
+</tbody></table>
+{% else %}
+<div style="padding:24px;color:var(--slate);">No billing records available yet.</div>
+{% endif %}
+</div></div>
+{% endblock %}

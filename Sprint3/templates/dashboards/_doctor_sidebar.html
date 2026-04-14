@@ -1,0 +1,32 @@
+<div class="nav-section-label">Overview</div>
+<a href="{{ url_for('user.doctor_dashboard') }}" class="nav-link {{ 'active' if active_page == 'dashboard' else '' }}">
+    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+    Dashboard
+</a>
+
+<div class="nav-section-label">Prescriptions</div>
+<a href="{{ url_for('user.doctor_write_prescription') }}" class="nav-link {{ 'active' if active_page == 'write_prescription' else '' }}">
+    <svg viewBox="0 0 24 24"><path d="M9 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8l-5-5H9ZM13 3v5h5M9 13h6M9 17h4"/></svg>
+    Write Prescription
+</a>
+<a href="{{ url_for('user.doctor_my_prescriptions') }}" class="nav-link {{ 'active' if active_page == 'my_prescriptions' else '' }}">
+    <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6Z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
+    My Prescriptions
+</a>
+
+<div class="nav-section-label">Patients</div>
+<a href="{{ url_for('user.doctor_patients') }}" class="nav-link {{ 'active' if active_page == 'patients' else '' }}">
+    <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+    My Patients
+    {% if total_patients and total_patients > 0 %}
+    <span class="nav-badge">{{ total_patients }}</span>
+    {% endif %}
+</a>
+<a href="{{ url_for('user.doctor_appointments') }}" class="nav-link {{ 'active' if active_page == 'appointments' else '' }}">
+    <svg viewBox="0 0 24 24"><path d="M8 2v2M16 2v2M3 8h18M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z"/></svg>
+    Appointments
+    {% if pending_appointments and pending_appointments > 0 %}
+    <span class="nav-badge">{{ pending_appointments }}</span>
+    {% endif %}
+</a>
+

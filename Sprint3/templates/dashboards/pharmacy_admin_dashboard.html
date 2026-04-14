@@ -1,0 +1,181 @@
+{% extends 'base.html' %}
+{% block title %}Pharmacy Admin Dashboard — PharmaCare{% endblock %}
+{% block page_title %}Pharmacy Admin Dashboard{% endblock %}
+
+{% block sidebar %}
+<div class="nav-section-label">Overview</div>
+<a href="{{ url_for('user.pharmacy_admin_dashboard') }}" class="nav-link {{ 'active' if active_page == 'dashboard' else '' }}">
+    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+    Dashboard
+</a>
+
+<div class="nav-section-label">Staff</div>
+<a href="{{ url_for('user.pharmacy_admin_manage_staff') }}" class="nav-link {{ 'active' if active_page == 'manage_staff' else '' }}">
+    <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    Manage Staff
+</a>
+
+<div class="nav-section-label">Inventory</div>
+<a href="{{ url_for('user.pharmacy_admin_inventory') }}" class="nav-link {{ 'active' if active_page == 'inventory' else '' }}">
+    <svg viewBox="0 0 24 24"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18"/></svg>
+    Stock Management
+</a>
+<a href="{{ url_for('user.pharmacy_admin_orders') }}" class="nav-link {{ 'active' if active_page == 'orders' else '' }}">
+    <svg viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+    Orders
+</a>
+
+<div class="nav-section-label">Finance</div>
+<a href="{{ url_for('user.pharmacy_admin_sales_reports') }}" class="nav-link {{ 'active' if active_page == 'sales_reports' else '' }}">
+    <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+    Sales Reports
+</a>
+<a href="{{ url_for('user.pharmacy_admin_billing_overview') }}" class="nav-link {{ 'active' if active_page == 'billing_overview' else '' }}">
+    <svg viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+    Billing Overview
+</a>
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <h2>Welcome, {{ session.get('name', 'Admin') }} 🏥</h2>
+    <p>Manage your pharmacy operations, staff, and inventory.</p>
+</div>
+
+<!-- Stats -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="1.8"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18"/></svg>
+        </div>
+        <div class="stat-label">Total Medicines</div>
+        <div class="stat-value">{{ total_medicines or '—' }}</div>
+        <div class="stat-sub">Items in stock</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon-wrap" style="background:#ede9fe;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+        </div>
+        <div class="stat-label">Staff Members</div>
+        <div class="stat-value" style="color:#7c3aed;">{{ staff_count or '—' }}</div>
+        <div class="stat-sub" style="color:#7c3aed;">Active pharmacists</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon-wrap" style="background:#dcfce7;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="1.8"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        </div>
+        <div class="stat-label">Today's Sales</div>
+        <div class="stat-value" style="color:#16a34a;">{{ today_sales or '—' }}</div>
+        <div class="stat-sub" style="color:#16a34a;">Revenue today</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon-wrap" style="background:#fee2e2;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="1.8"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        </div>
+        <div class="stat-label">Low Stock Alerts</div>
+        <div class="stat-value" style="color:#dc2626;">{{ low_stock or '—' }}</div>
+        <div class="stat-sub" style="color:#dc2626;">Items need reorder</div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div style="display:flex; gap:12px; margin-bottom:24px; flex-wrap:wrap;">
+    <a href="{{ url_for('user.pharmacy_admin_inventory') }}#add-medicine" class="btn btn-teal" style="padding:11px 22px;">
+        <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add Medicine
+    </a>
+    <a href="{{ url_for('user.pharmacy_admin_orders') }}" class="btn btn-ghost" style="padding:11px 22px;">
+        <svg viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+        New Order
+    </a>
+    <a href="{{ url_for('user.pharmacy_admin_sales_reports') }}" class="btn btn-ghost" style="padding:11px 22px;">
+        <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        View Reports
+    </a>
+</div>
+
+<!-- Two column layout -->
+<div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+
+    <!-- Staff List -->
+    <div class="card" style="margin-bottom:0;">
+        <div class="card-head">
+            <h3>Staff Members</h3>
+            <a href="{{ url_for('user.pharmacy_admin_manage_staff') }}" class="btn btn-ghost">Manage</a>
+        </div>
+        <div class="card-body" style="padding:0;">
+            {% if staff_list %}
+            <table class="tbl">
+                <thead>
+                    <tr><th>Name</th><th>Role</th><th>Status</th></tr>
+                </thead>
+                <tbody>
+                    {% for s in staff_list %}
+                    <tr>
+                        <td style="font-weight:500;">{{ s[0] }}</td>
+                        <td><span class="badge badge-{{ s[1] }}">{{ s[1].title() }}</span></td>
+                        <td><span class="badge badge-approved">Active</span></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="empty-state">
+                <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+                <p class="empty-title">No staff added yet</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Recent Orders -->
+    <div class="card" style="margin-bottom:0;">
+        <div class="card-head">
+            <h3>Recent Orders</h3>
+            <a href="{{ url_for('user.pharmacy_admin_billing_overview') }}" class="btn btn-ghost">View All</a>
+        </div>
+        <div class="card-body" style="padding:0;">
+            {% if recent_orders %}
+            <table class="tbl">
+                <thead>
+                    <tr><th>Item</th><th>Qty</th><th>Status</th></tr>
+                </thead>
+                <tbody>
+                    {% for o in recent_orders %}
+                    <tr>
+                        <td style="font-weight:500;">{{ o[0] }}</td>
+                        <td>{{ o[1] }}</td>
+                        <td><span class="badge badge-{{ o[2] }}">{{ o[2].title() }}</span></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="empty-state">
+                <svg viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+                <p class="empty-title">No recent orders</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block extra_head %}
+<style>
+    .empty-state {
+        padding: 40px;
+        text-align: center;
+        color: var(--slate);
+    }
+    .empty-state svg {
+        width: 36px; height: 36px;
+        stroke: var(--line); fill: none; stroke-width: 1.5;
+        display: block; margin: 0 auto 12px;
+    }
+    .empty-title { font-weight: 500; color: var(--navy); font-size:.9rem; }
+</style>
+{% endblock %}

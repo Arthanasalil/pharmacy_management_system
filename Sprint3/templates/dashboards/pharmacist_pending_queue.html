@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% block title %}Pending Queue{% endblock %}
+{% block page_title %}Pending Queue{% endblock %}
+
+{% block sidebar %}
+{% include 'dashboards/_pharmacist_sidebar.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="page-header"><h2>Pending Queue</h2><p>Routed prescriptions waiting for billing and client payment.</p></div>
+<div class="card"><div class="card-body" style="padding:0;">
+{% if pending_prescriptions %}
+<table class="tbl">
+    <thead>
+        <tr>
+            <th>#</th><th>Patient</th><th>Doctor</th><th>Medicine</th>
+            <th>Instructions</th><th>Qty</th><th>Date</th><th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for p in pending_prescriptions %}
+    <tr>
+        <td>{{ p[0] }}</td>
+        <td>{{ p[1] }}</td>
+        <td>{% if p[2] and p[2].lower().startswith('dr.') %}{{ p[2] }}{% else %}Dr. {{ p[2] }}{% endif %}</td>
+        <td>
+            {% if p[3] and p[3] != '-' %}
+                {{ p[3] }}
+            {% else %}
+                <span style="color:var(--slate);font-style:italic;">See document</span>
+            {% endif %}
+        </td>
+        <td>{{ p[6] if p[6] else '-' }}</td>
+        <td>{{ p[7] if p[7] else 1 }}</td>
+        <td>{{ p[4] }}</td>
+        <td>
+            <form method="post" action="{{ url_for('user.dispense_prescription', prescription_id=p[0]) }}" style="display:flex;gap:8px;align-items:center;">
+                <input type="hidden" name="requested_medicine" value="{{ p[3] if p[3] and p[3] != '-' else '' }}">
+                <input type="number" name="quantity" value="{{ p[7] if p[7] else 1 }}" min="1" style="width:70px;">
+                <input type="hidden" name="gst_rate" value="12">
+                <button class="btn btn-teal" type="submit">Generate Bill</button>
+            </form>
+        </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<div style="padding:40px;color:var(--slate);text-align:center;">No pending prescriptions.</div>
+{% endif %}
+</div></div>
+{% endblock %}

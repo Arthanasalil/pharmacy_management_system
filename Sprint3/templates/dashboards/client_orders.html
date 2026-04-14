@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+{% block title %}My Orders - PharmaC{% endblock %}
+{% block page_title %}My Orders{% endblock %}
+
+{% block sidebar %}
+{% set active_page = 'orders' %}
+{% include 'dashboards/_client_sidebar.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>My Orders</h2>
+    <p>Track your prescription orders and dispensing status.</p>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon-wrap" style="background:#dbeafe;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#1d4ed8" stroke-width="1.8"><path d="M9 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8l-5-5H9ZM13 3v5h5M9 13h6M9 17h4"/></svg>
+        </div>
+        <div class="stat-label">Total Orders</div>
+        <div class="stat-value" style="color:#1d4ed8;">{{ orders | length }}</div>
+        <div class="stat-sub" style="color:#1d4ed8;">All time</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon-wrap" style="background:#dcfce7;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="1.8"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <div class="stat-label">Dispensed</div>
+        <div class="stat-value" style="color:#16a34a;">
+            {% set dispensed_count = [] %}
+            {% for o in orders %}{% if o[3] == 'dispensed' %}{% set _ = dispensed_count.append(1) %}{% endif %}{% endfor %}
+            {{ dispensed_count | length }}
+        </div>
+        <div class="stat-sub" style="color:#16a34a;">Successfully filled</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon-wrap" style="background:#f3e8ff;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="1.8"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        </div>
+        <div class="stat-label">Pharmacies</div>
+        <div class="stat-value" style="color:#7c3aed;">
+            {{ orders | map(attribute=1) | unique | list | length }}
+        </div>
+        <div class="stat-sub" style="color:#7c3aed;">Assigned to you</div>
+    </div>
+</div>
+<div class="card">
+    <div class="card-head">
+        <h3>Order History</h3>
+    </div>
+    <div class="card-body" style="padding:0;">
+        {% if orders %}
+        <table class="tbl">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Pharmacy</th>
+                    <th>Order Date</th>
+                    <th>Status</th>
+                    <th>Dispensed Date</th>
+                    <th>Invoice</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for o in orders %}
+                <tr>
+                    <td style="color:var(--slate);font-size:.82rem;">{{ o[0] }}</td>
+                    <td style="font-weight:500;">{{ o[1] }}</td>
+                    <td style="color:var(--slate);">{{ o[2] }}</td>
+                    <td>
+                        <span class="badge badge-{{ o[3] }}">
+                            {{ o[3].replace('_', ' ').title() }}
+                        </span>
+                    </td>
+                    <td style="color:var(--slate);">
+                        {% if o[3] == 'dispensed' and o[4] != '-' %}
+                            <span style="color:#16a34a;font-weight:500;">{{ o[4] }}</span>
+                        {% else %}
+                            <span style="color:#94a3b8;">—</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if o[5] != '-' %}
+                            <span style="font-size:.82rem;font-weight:500;color:#1d4ed8;">{{ o[5] }}</span>
+                        {% else %}
+                            <span style="color:#94a3b8;">—</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div style="padding:50px;text-align:center;color:var(--slate);">No orders found.</div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

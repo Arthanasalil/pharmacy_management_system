@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>PMS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    {% block extra_head %}{% endblock %}
+    <style>
+        :root {
+            --teal: #0d9488;
+            --teal-dk: #0f766e;
+            --teal-lt: #ccfbf1;
+            --navy: #0f2744;
+            --slate: #475569;
+            --line: #e2e8f0;
+            --bg: #f0fdf9;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+        }
+
+        .container-fluid {
+            padding: 0;
+        }
+
+        .row {
+            margin: 0;
+        }
+
+        .col-md-2.bg-dark.text-white.vh-100 {
+            background: linear-gradient(180deg, var(--navy), #0b1f38) !important;
+            border-right: 1px solid rgba(255, 255, 255, .12);
+            padding: 18px 14px;
+            overflow-y: auto;
+        }
+
+        .col-md-2 h4.p-3 {
+            margin: 0 8px 14px;
+            padding: 0 0 12px !important;
+            font-family: 'Playfair Display', serif;
+            font-size: 1.45rem;
+            border-bottom: 1px solid rgba(255, 255, 255, .1);
+        }
+
+        .nav-section-label {
+            font-size: .72rem;
+            letter-spacing: .1em;
+            text-transform: uppercase;
+            color: #8ea6bf;
+            margin: 14px 10px 6px;
+            font-weight: 600;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 2px 4px;
+            padding: 10px 12px;
+            border-radius: 10px;
+            color: #dbe7f3;
+            text-decoration: none;
+            font-size: .9rem;
+            font-weight: 500;
+            transition: background .2s, color .2s;
+        }
+
+        .nav-link svg {
+            width: 16px;
+            height: 16px;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 1.8;
+            flex-shrink: 0;
+        }
+
+        .nav-link:hover {
+            background: rgba(255, 255, 255, .08);
+            color: #fff;
+        }
+
+        .nav-link.active {
+            background: rgba(13, 148, 136, .16);
+            color: #99f6e4;
+            border: 1px solid rgba(13, 148, 136, .35);
+        }
+
+        .nav-badge {
+            margin-left: auto;
+            background: #5eead4;
+            color: #042f2e;
+            font-size: .72rem;
+            font-weight: 700;
+            border-radius: 999px;
+            padding: 1px 8px;
+        }
+
+        .col-md-10.p-4 {
+            padding: 24px !important;
+        }
+
+        .page-header {
+            background: #fff;
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            box-shadow: 0 10px 28px rgba(15, 39, 68, .08);
+            padding: 18px 20px;
+            margin-bottom: 18px;
+        }
+
+        .page-header h2 {
+            margin: 0 0 6px;
+            font-family: 'Playfair Display', serif;
+            color: var(--navy);
+            font-size: 1.7rem;
+        }
+
+        .page-header p {
+            margin: 0;
+            color: var(--slate);
+            font-size: .92rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 14px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: #fff;
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            box-shadow: 0 8px 22px rgba(15, 39, 68, .06);
+            padding: 16px;
+        }
+
+        .stat-icon-wrap {
+            width: 42px;
+            height: 42px;
+            border-radius: 10px;
+            background: var(--teal-lt);
+            display: grid;
+            place-items: center;
+            margin-bottom: 12px;
+        }
+
+        .stat-icon-wrap svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .stat-label {
+            font-size: .75rem;
+            text-transform: uppercase;
+            letter-spacing: .09em;
+            color: #64748b;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        .stat-value {
+            font-size: 1.6rem;
+            font-weight: 700;
+            line-height: 1.1;
+            color: var(--navy);
+            margin-bottom: 3px;
+        }
+
+        .stat-sub {
+            font-size: .82rem;
+            color: var(--slate);
+        }
+
+        .card {
+            background: #fff;
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            box-shadow: 0 12px 32px rgba(15, 39, 68, .08);
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .card-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            padding: 15px 16px;
+            border-bottom: 1px solid var(--line);
+            flex-wrap: wrap;
+        }
+
+        .card-head h3 {
+            margin: 0;
+            color: var(--navy);
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .card-body {
+            padding: 16px;
+        }
+
+        .tbl {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .tbl th,
+        .tbl td {
+            padding: 11px 14px;
+            border-bottom: 1px solid var(--line);
+            font-size: .86rem;
+            vertical-align: middle;
+        }
+
+        .tbl th {
+            font-size: .72rem;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            color: #64748b;
+            font-weight: 700;
+        }
+
+        .tbl tbody tr:hover {
+            background: #f8fafc;
+        }
+
+        .badge {
+            display: inline-flex;
+            border-radius: 999px;
+            padding: 4px 10px;
+            font-size: .74rem;
+            font-weight: 600;
+        }
+
+        .badge-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .badge-routed {
+            background: #e5e7eb;
+            color: #111827;
+        }
+
+        .badge-approved,
+        .badge-active,
+        .badge-dispensed,
+        .badge-completed {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .badge-rejected,
+        .badge-inactive,
+        .badge-cancelled {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .badge-doctor {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .badge-pharmacist {
+            background: #ede9fe;
+            color: #6d28d9;
+        }
+
+        .badge-pharmacy_admin {
+            background: #fce7f3;
+            color: #be185d;
+        }
+
+        .badge-client {
+            background: #e0f2fe;
+            color: #0369a1;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            border-radius: 10px;
+            border: 1px solid transparent;
+            text-decoration: none;
+            font-size: .82rem;
+            font-weight: 600;
+            padding: 8px 12px;
+            transition: all .2s;
+            line-height: 1;
+        }
+
+        .btn svg {
+            width: 14px;
+            height: 14px;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 2;
+        }
+
+        .btn-teal {
+            background: var(--teal);
+            color: #fff;
+        }
+
+        .btn-teal:hover {
+            background: var(--teal-dk);
+            color: #fff;
+        }
+
+        .btn-red {
+            background: #dc2626;
+            color: #fff;
+        }
+
+        .btn-red:hover {
+            background: #b91c1c;
+            color: #fff;
+        }
+
+        .btn-ghost {
+            background: #fff;
+            border-color: var(--line);
+            color: var(--slate);
+        }
+
+        .btn-ghost:hover {
+            background: #f8fafc;
+            border-color: #cbd5e1;
+            color: var(--navy);
+        }
+
+        @media (max-width: 900px) {
+            .col-md-2.bg-dark.text-white.vh-100 {
+                min-height: auto !important;
+            }
+
+            .tbl {
+                min-width: 720px;
+            }
+
+            .card {
+                overflow-x: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-2 bg-dark text-white vh-100 d-flex flex-column">
+            <h4 class="p-3">
+                {% if session.get('role') == 'doctor' %}
+                    Doctor
+                {% elif session.get('role') == 'pharmacist' %}
+                    Pharmacist
+                {% elif session.get('role') == 'pharmacy_admin' %}
+                    Pharmacy Admin
+                {% elif session.get('role') == 'client' %}
+                    Client
+                {% elif session.get('role') == 'system_admin' %}
+                    System Admin
+                {% else %}
+                    Dashboard
+                {% endif %}
+            </h4>
+            {% block sidebar %}{% endblock %}
+        </div>
+
+        <div class="col-md-10 p-4">
+            <div class="d-flex justify-content-end mb-3">
+                <a href="{{ url_for('user.logout') }}" class="btn btn-red">
+                    Logout
+                </a>
+            </div>
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

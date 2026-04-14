@@ -1,0 +1,251 @@
+{% extends 'base.html' %}
+{% block title %}Pharmacist Dashboard — PharmaCare{% endblock %}
+{% block page_title %}Pharmacist Dashboard{% endblock %}
+
+{% block sidebar %}
+{% set active_page = active_page|default('dashboard') %}
+<div class="nav-section-label">Overview</div>
+<a href="{{ url_for('user.pharmacist_dashboard') }}" class="nav-link {{ 'active' if active_page == 'dashboard' else '' }}">
+    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+    Dashboard
+</a>
+
+<div class="nav-section-label">Prescriptions</div>
+<a href="{{ url_for('user.pharmacist_pending_queue') }}" class="nav-link {{ 'active' if active_page == 'pending_queue' else '' }}">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+    Pending Queue
+</a>
+<a href="{{ url_for('user.pharmacist_dispensed') }}" class="nav-link {{ 'active' if active_page == 'dispensed' else '' }}">
+    <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+    Dispensed
+</a>
+<div class="nav-section-label">Inventory</div>
+<a href="{{ url_for('user.pharmacist_inventory') }}" class="nav-link {{ 'active' if active_page == 'inventory' else '' }}">
+    <svg viewBox="0 0 24 24"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18"/></svg>
+    Stock Levels
+</a>
+
+<div class="nav-section-label">Billing</div>
+<a href="{{ url_for('user.pharmacist_billing') }}" class="nav-link {{ 'active' if active_page == 'billing' else '' }}">
+    <svg viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+    Process Bills
+</a>
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <h2>Welcome, {{ session.get('name', 'Pharmacist') }} 💊</h2>
+    <p>Process prescriptions and manage your dispensing queue.</p>
+</div>
+
+{% if medicine_saved %}
+<div class="alert success-alert">Medicine added to inventory successfully.</div>
+{% endif %}
+{% if medicine_error %}
+<div class="alert error-alert">{{ medicine_error }}</div>
+{% endif %}
+{% if dispense_success %}
+<div class="alert success-alert">
+    Stock updated and bill generated for client.
+    {% if substitute_used == '1' %}
+    Auto-substitute used: {{ dispensed_name }} (same content).
+    {% endif %}
+</div>
+{% endif %}
+{% if bill_generated %}
+<div class="alert success-alert">
+    Bill forwarded to client (Invoice: {{ invoice_no }}). GST: {{ bill_gst }}, Total: {{ bill_total }}.
+</div>
+{% endif %}
+{% if dispense_error %}
+<div class="alert error-alert">{{ dispense_error }}</div>
+{% endif %}
+{% if paid_notifications and paid_notifications > 0 %}
+<div class="alert success-alert">
+    {{ paid_notifications }} payment(s) completed by clients. Check Billing section.
+</div>
+{% endif %}
+
+<!-- Stats -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon-wrap" style="background:#fef3c7;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </div>
+        <div class="stat-label">Pending Queue</div>
+        <div class="stat-value" style="color:#d97706;">{{ pending_queue or '—' }}</div>
+        <div class="stat-sub" style="color:#d97706;">Awaiting dispensing</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon-wrap" style="background:#dcfce7;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="1.8"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <div class="stat-label">Dispensed Today</div>
+        <div class="stat-value" style="color:#16a34a;">{{ dispensed_today or '—' }}</div>
+        <div class="stat-sub" style="color:#16a34a;">Completed today</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon-wrap" style="background:#fee2e2;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="1.8"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        </div>
+        <div class="stat-label">Low Stock Items</div>
+        <div class="stat-value" style="color:#dc2626;">{{ low_stock or '—' }}</div>
+        <div class="stat-sub" style="color:#dc2626;">Need reordering</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="1.8"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18"/></svg>
+        </div>
+        <div class="stat-label">Total Medicines</div>
+        <div class="stat-value">{{ total_medicines or '—' }}</div>
+        <div class="stat-sub">In inventory</div>
+    </div>
+</div>
+
+<!-- Pending Queue -->
+<div class="card" id="inventory">
+    <div class="card-head">
+        <h3>Prescription Queue
+            {% if pending_queue and pending_queue > 0 %}
+            <span class="badge badge-pending" style="margin-left:8px;">{{ pending_queue }} pending</span>
+            {% endif %}
+        </h3>
+        <a href="#" class="btn btn-ghost">
+            View All
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </a>
+    </div>
+    <div class="card-body" style="padding:0;">
+        {% if pending_prescriptions %}
+        <table class="tbl">
+            <thead>
+                <tr>
+                    <th>#</th><th>Patient</th><th>Doctor</th><th>Medication</th><th>Instructions</th><th>Qty</th><th>Date</th><th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in pending_prescriptions %}
+                <tr>
+                    <td style="color:var(--slate);font-size:.82rem;">{{ p[0] }}</td>
+                    <td style="font-weight:500;">{{ p[1] }}</td>
+                    <td style="color:var(--slate);">{{ p[2] }}</td>
+                    <td>{{ p[3] }}</td>
+                    <td style="color:var(--slate);font-size:.82rem;">{{ p[6] if p[6] else '-' }}</td>
+                    <td style="font-weight:600;color:#0f766e;">{{ p[7] if p[7] else 1 }}</td>
+                    <td style="color:var(--slate);">{{ p[4] }}</td>
+                    <td>
+                        <form method="post" action="{{ url_for('user.dispense_prescription', prescription_id=p[0]) }}" class="dispense-form">
+                            <input type="hidden" name="requested_medicine" value="{{ p[3] }}">
+                            <input type="number" name="quantity" value="{{ p[7] if p[7] else 1 }}" min="1" class="qty-input">
+                            <input type="hidden" name="gst_rate" value="12">
+                            <button type="submit" class="btn btn-teal">
+                                <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                                Bill Client
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <p class="empty-title">Queue is clear!</p>
+            <p class="empty-sub">No pending prescriptions at the moment.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Current Inventory -->
+<div class="card">
+    <div class="card-head">
+        <h3>Current Inventory</h3>
+    </div>
+    <div class="card-body" style="padding:0;">
+        {% if inventory_items %}
+        <table class="tbl">
+            <thead>
+                <tr><th>Medicine</th><th>Content</th><th>Brand</th><th>Stock</th><th>Unit Price</th><th>Min Stock</th></tr>
+            </thead>
+            <tbody>
+                {% for item in inventory_items %}
+                <tr>
+                    <td style="font-weight:500;">{{ item[0] }}</td>
+                    <td>{{ item[1] }}</td>
+                    <td>{{ item[2] }}</td>
+                    <td>{{ item[3] }}</td>
+                    <td>{{ item[4] }}</td>
+                    <td>{{ item[5] }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state">
+            <svg viewBox="0 0 24 24"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18"/></svg>
+            <p class="empty-title">No medicines in inventory</p>
+            <p class="empty-sub">Add medicine above to start dispensing.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_head %}
+<style>
+    .empty-state {
+        padding: 50px;
+        text-align: center;
+        color: var(--slate);
+    }
+    .empty-state svg {
+        width: 44px; height: 44px;
+        stroke: var(--line); fill: none; stroke-width: 1.5;
+        display: block; margin: 0 auto 14px;
+    }
+    .empty-title { font-weight: 500; color: var(--navy); margin-bottom: 4px; }
+    .empty-sub   { font-size: .85rem; }
+    .alert {
+        border-radius: 12px;
+        padding: 12px 14px;
+        margin-bottom: 16px;
+        font-size: .9rem;
+    }
+    .success-alert {
+        background: #ecfdf5;
+        border: 1px solid #86efac;
+        color: #166534;
+    }
+    .error-alert {
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        color: #991b1b;
+    }
+    .medicine-form {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+        gap: 10px;
+        align-items: end;
+    }
+    .medicine-form input,
+    .qty-input {
+        padding: 10px 12px;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        font-size: .85rem;
+        background: #fff;
+    }
+    .dispense-form {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .qty-input {
+        width: 70px;
+    }
+</style>
+{% endblock %}

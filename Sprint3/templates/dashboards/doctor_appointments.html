@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% block title %}Appointments - PharmaC{% endblock %}
+
+{% block sidebar %}
+{% set active_page = 'appointments' %}
+{% include 'dashboards/_doctor_sidebar.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>Appointment Requests</h2>
+    <p>Review appointment requests and confirm or reject.</p>
+</div>
+
+{% if appointment_updated %}
+<div class="card" style="border-color:#86efac;background:#f0fdf4;">
+    <div class="card-body" style="color:#166534;font-weight:600;">Appointment status updated.</div>
+</div>
+{% endif %}
+
+<div class="card">
+    <div class="card-head">
+        <h3>All Appointment Requests
+            {% if pending_appointments and pending_appointments > 0 %}
+            <span class="badge badge-pending" style="margin-left:8px;">{{ pending_appointments }} pending</span>
+            {% endif %}
+        </h3>
+    </div>
+    <div class="card-body" style="padding:0;">
+        {% if recent_appointments %}
+        <table class="tbl">
+            <thead><tr><th>#</th><th>Client</th><th>Date</th><th>Time</th><th>Reason</th><th>Status</th></tr></thead>
+            <tbody>
+                {% for a in recent_appointments %}
+                <tr>
+                    <td style="color:var(--slate);font-size:.82rem;">{{ a[0] }}</td>
+                    <td style="font-weight:500;">{{ a[1] }}</td>
+                    <td style="color:var(--slate);">{{ a[2] }}</td>
+                    <td style="color:var(--slate);">{{ a[3] }}</td>
+                    <td>{{ a[4] }}</td>
+                    <td>
+                        {% if a[5] == 'confirmed' %}
+                            <span class="badge badge-approved">Confirmed</span>
+                        {% elif a[5] == 'pending' %}
+                            <span class="badge badge-pending">Pending</span>
+                        {% elif a[5] == 'cancelled' %}
+                            <span class="badge badge-rejected">Rejected</span>
+                        {% else %}
+                            <span class="badge">{{ a[5].title() }}</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div style="padding:48px;text-align:center;color:var(--slate);">No appointment requests yet.</div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

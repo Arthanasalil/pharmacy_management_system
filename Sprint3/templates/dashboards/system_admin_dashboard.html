@@ -1,0 +1,484 @@
+{% extends 'base.html' %}
+{% block title %}System Admin - PharmaC{% endblock %}
+
+{% block sidebar %}
+<div class="nav-section-label">Overview</div>
+<a href="{{ url_for('user.system_admin_dashboard') }}" class="nav-link active">
+    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+    Dashboard
+</a>
+
+<div class="nav-section-label">User Management</div>
+<a href="{{ url_for('user.view_users') }}" class="nav-link">
+    <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    Approve Users
+    {% if pending_count and pending_count > 0 %}
+    <span class="nav-badge">{{ pending_count }}</span>
+    {% endif %}
+</a>
+<a href="{{ url_for('user.all_users') }}" class="nav-link">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+    All Users
+</a>
+
+<div class="nav-section-label">System</div>
+<a href="{{ url_for('user.view_pharmacies') }}" class="nav-link">
+    <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    Manage Pharmacies
+</a>
+
+<div class="nav-section-label">Reports</div>
+<a href="{{ url_for('system_report_view') }}" class="nav-link">
+    <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+    System Reports
+</a>
+
+{% endblock %}
+
+{% block content %}
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600&family=DM+Sans:wght@400;500;600&display=swap');
+
+:root {
+    --teal: #0d9488;
+    --teal-dk: #0f766e;
+    --teal-lt: #ccfbf1;
+    --navy: #0f2744;
+    --slate: #475569;
+    --line: #e2e8f0;
+    --bg: #f0fdf9;
+}
+
+body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+}
+
+.container-fluid {
+    padding: 0;
+}
+
+.row {
+    margin: 0;
+}
+
+.col-md-2.bg-dark.text-white.vh-100 {
+    background: linear-gradient(180deg, var(--navy), #0b1f38) !important;
+    border-right: 1px solid rgba(255, 255, 255, .12);
+    padding: 18px 14px;
+    overflow-y: auto;
+}
+
+.col-md-2 h4.p-3 {
+    margin: 0 8px 14px;
+    padding: 0 0 12px !important;
+    font-family: 'Playfair Display', serif;
+    font-size: 1.45rem;
+    border-bottom: 1px solid rgba(255, 255, 255, .1);
+}
+
+.nav-section-label {
+    font-size: .72rem;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: #8ea6bf;
+    margin: 14px 10px 6px;
+    font-weight: 600;
+}
+
+.nav-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 2px 4px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    color: #dbe7f3;
+    text-decoration: none;
+    font-size: .9rem;
+    font-weight: 500;
+    transition: background .2s, color .2s;
+}
+
+.nav-link svg {
+    width: 16px;
+    height: 16px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.8;
+    flex-shrink: 0;
+}
+
+.nav-link:hover {
+    background: rgba(255, 255, 255, .08);
+    color: #fff;
+}
+
+.nav-link.active {
+    background: rgba(13, 148, 136, .16);
+    color: #99f6e4;
+    border: 1px solid rgba(13, 148, 136, .35);
+}
+
+.nav-badge {
+    margin-left: auto;
+    background: #5eead4;
+    color: #042f2e;
+    font-size: .72rem;
+    font-weight: 700;
+    border-radius: 999px;
+    padding: 1px 8px;
+}
+
+.col-md-10.p-4 {
+    padding: 24px !important;
+}
+
+.page-header {
+    background: #ffffff;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    box-shadow: 0 10px 28px rgba(15, 39, 68, .08);
+    padding: 18px 20px;
+    margin-bottom: 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.page-header h2 {
+    margin: 0 0 6px;
+    font-family: 'Playfair Display', serif;
+    color: var(--navy);
+    font-size: 1.75rem;
+}
+
+.page-header p {
+    margin: 0;
+    color: var(--slate);
+    font-size: .92rem;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 14px;
+    margin-bottom: 20px;
+}
+
+.stat-card {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    box-shadow: 0 8px 22px rgba(15, 39, 68, .06);
+    padding: 16px;
+}
+
+.stat-icon-wrap {
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    background: var(--teal-lt);
+    display: grid;
+    place-items: center;
+    margin-bottom: 12px;
+}
+
+.stat-icon-wrap svg {
+    width: 20px;
+    height: 20px;
+}
+
+.stat-label {
+    font-size: .75rem;
+    text-transform: uppercase;
+    letter-spacing: .09em;
+    color: #64748b;
+    margin-bottom: 5px;
+    font-weight: 600;
+}
+
+.stat-value {
+    font-size: 1.6rem;
+    font-weight: 700;
+    line-height: 1.1;
+    color: var(--navy);
+    margin-bottom: 3px;
+}
+
+.stat-sub {
+    font-size: .82rem;
+    color: var(--slate);
+}
+
+.card {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    box-shadow: 0 12px 32px rgba(15, 39, 68, .08);
+    overflow: hidden;
+}
+
+.card-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    padding: 15px 16px;
+    border-bottom: 1px solid var(--line);
+}
+
+.card-head h3 {
+    margin: 0;
+    color: var(--navy);
+    font-size: 1rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+}
+
+.tbl {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.tbl th,
+.tbl td {
+    padding: 11px 14px;
+    border-bottom: 1px solid var(--line);
+    font-size: .86rem;
+    vertical-align: middle;
+}
+
+.tbl th {
+    font-size: .72rem;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: #64748b;
+    font-weight: 700;
+}
+
+.tbl tbody tr:hover {
+    background: #f8fafc;
+}
+
+.badge {
+    display: inline-flex;
+    border-radius: 999px;
+    padding: 4px 10px;
+    font-size: .74rem;
+    font-weight: 600;
+}
+
+.badge-pending { background: #fef3c7; color: #92400e; }
+.badge-doctor { background: #dbeafe; color: #1d4ed8; }
+.badge-pharmacist { background: #ede9fe; color: #6d28d9; }
+.badge-client { background: #e0f2fe; color: #0369a1; }
+.badge-pharmacy_admin { background: #fce7f3; color: #be185d; }
+.badge-approved { background: #dcfce7; color: #166534; }
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    border-radius: 10px;
+    border: 1px solid transparent;
+    text-decoration: none;
+    font-size: .82rem;
+    font-weight: 600;
+    padding: 8px 12px;
+    transition: all .2s;
+    line-height: 1;
+}
+
+.btn svg {
+    width: 14px;
+    height: 14px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+}
+
+.btn-teal { background: var(--teal); color: #fff; }
+.btn-teal:hover { background: var(--teal-dk); color: #fff; }
+
+.btn-red { background: #dc2626; color: #fff; }
+.btn-red:hover { background: #b91c1c; color: #fff; }
+
+.btn-ghost {
+    background: #fff;
+    border-color: var(--line);
+    color: var(--slate);
+}
+.btn-ghost:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+    color: var(--navy);
+}
+
+@media (max-width: 900px) {
+    .col-md-2.bg-dark.text-white.vh-100 { min-height: auto !important; }
+    .tbl { min-width: 720px; }
+    .card { overflow-x: auto; }
+}
+</style>
+
+<div class="page-header">
+    <div>
+        <h2>Welcome back, {{ session.get('name', 'Admin') }}</h2>
+        <p>Live overview of user activity, approvals, and pharmacy onboarding.</p>
+    </div>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="1.8">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+        </div>
+        <div class="stat-label">Total Users</div>
+        <div class="stat-value">{{ total_users }}</div>
+        <div class="stat-sub">All registered accounts</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon-wrap" style="background:#fef3c7;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="1.8">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12 6 12 12 16 14"/>
+            </svg>
+        </div>
+        <div class="stat-label">Pending Approvals</div>
+        <div class="stat-value" style="color:#d97706;">{{ pending_count }}</div>
+        <div class="stat-sub" style="color:#d97706;">Awaiting review</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon-wrap" style="background:#dcfce7;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="1.8">
+                <polyline points="20 6 9 17 4 12"/>
+            </svg>
+        </div>
+        <div class="stat-label">Approved Users</div>
+        <div class="stat-value" style="color:#16a34a;">{{ approved_count }}</div>
+        <div class="stat-sub" style="color:#16a34a;">Active accounts</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon-wrap" style="background:#dbeafe;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#1d4ed8" stroke-width="1.8">
+                <path d="M8 2v2M16 2v2M3 8h18M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z"/>
+                <path d="M12 11v5M9.5 13.5h5"/>
+            </svg>
+        </div>
+        <div class="stat-label">Doctors</div>
+        <div class="stat-value" style="color:#1d4ed8;">{{ doctor_count }}</div>
+        <div class="stat-sub" style="color:#1d4ed8;">Registered doctors</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon-wrap" style="background:#ede9fe;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="1.8">
+                <path d="M9 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8l-5-5H9ZM13 3v5h5M9 13h6M9 17h4"/>
+            </svg>
+        </div>
+        <div class="stat-label">Pharmacists</div>
+        <div class="stat-value" style="color:#7c3aed;">{{ pharmacist_count }}</div>
+        <div class="stat-sub" style="color:#7c3aed;">Registered pharmacists</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon-wrap" style="background:#fce7f3;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#be185d" stroke-width="1.8">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                <polyline points="9 22 9 12 15 12 15 22"/>
+            </svg>
+        </div>
+        <div class="stat-label">Pharmacies</div>
+        <div class="stat-value" style="color:#be185d;">{{ pharmacy_count }}</div>
+        <div class="stat-sub" style="color:#be185d;">Registered pharmacies</div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-head">
+        <h3>
+            Pending Approvals
+            {% if pending_count > 0 %}
+            <span class="badge badge-pending" style="margin-left:8px;">{{ pending_count }} waiting</span>
+            {% endif %}
+        </h3>
+        <a href="{{ url_for('user.view_users') }}" class="btn btn-ghost">
+            View All
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </a>
+    </div>
+
+    <div class="card-body" style="padding:0;">
+        {% if pending_users %}
+        <table class="tbl">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Role ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for u in pending_users %}
+                <tr>
+                    <td style="color:var(--slate);font-size:.82rem;">{{ u[0] }}</td>
+                    <td>
+                        {% if u[5] %}
+                        <span style="background:#e0f2fe;color:#0369a1;font-family:monospace;font-size:.79rem;padding:3px 8px;border-radius:6px;font-weight:600;letter-spacing:.45px;">
+                            {{ u[5] }}
+                        </span>
+                        {% else %}
+                        <span style="color:var(--slate);">-</span>
+                        {% endif %}
+                    </td>
+                    <td style="font-weight:600;">{{ u[1] }}</td>
+                    <td style="color:var(--slate);">{{ u[2] }}</td>
+                    <td>
+                        <span class="badge badge-{{ u[3] }}">
+                            {{ u[3].replace('_',' ').title() }}
+                        </span>
+                    </td>
+                    <td>
+                        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                            <a href="{{ url_for('user.approve_user', user_id=u[0]) }}" class="btn btn-teal">
+                                <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                                Approve
+                            </a>
+                            <a href="{{ url_for('user.reject_user', user_id=u[0]) }}" class="btn btn-red" onclick="return confirm('Reject and permanently delete this user?')">
+                                <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                                Reject
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div style="padding:50px;text-align:center;color:var(--slate);">
+            <svg viewBox="0 0 24 24" style="width:44px;height:44px;stroke:var(--line);fill:none;stroke-width:1.5;display:block;margin:0 auto 14px;">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <polyline points="16 11 18 13 22 9"/>
+            </svg>
+            <p style="font-weight:600;color:var(--navy);margin-bottom:4px;">All clear</p>
+            <p style="font-size:.85rem;">No pending approvals right now.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

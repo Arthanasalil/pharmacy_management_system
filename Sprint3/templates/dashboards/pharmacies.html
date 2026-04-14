@@ -1,0 +1,305 @@
+{% extends 'base.html' %}
+{% block title %}Manage Pharmacies - PharmaC{% endblock %}
+
+{% block sidebar %}
+<div class="nav-section-label">Overview</div>
+<a href="{{ url_for('user.system_admin_dashboard') }}" class="nav-link">
+    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+    Dashboard
+</a>
+
+<div class="nav-section-label">User Management</div>
+<a href="{{ url_for('user.view_users') }}" class="nav-link">
+    <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    Approve Users
+</a>
+<a href="{{ url_for('user.all_users') }}" class="nav-link">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+    All Users
+</a>
+
+<div class="nav-section-label">System</div>
+<a href="{{ url_for('user.view_pharmacies') }}" class="nav-link active">
+    <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    Manage Pharmacies
+</a>
+
+<div class="nav-section-label">Reports</div>
+<a href="{{ url_for('system_report_view') }}" class="nav-link">
+    <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+    System Reports
+</a>
+{% endblock %}
+
+{% block content %}
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600&family=DM+Sans:wght@400;500;600&display=swap');
+
+:root {
+    --teal: #0d9488;
+    --teal-dk: #0f766e;
+    --teal-lt: #ccfbf1;
+    --navy: #0f2744;
+    --slate: #475569;
+    --line: #e2e8f0;
+    --bg: #f0fdf9;
+}
+
+body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+}
+
+.container-fluid { padding: 0; }
+.row { margin: 0; }
+
+.col-md-2.bg-dark.text-white.vh-100 {
+    background: linear-gradient(180deg, var(--navy), #0b1f38) !important;
+    border-right: 1px solid rgba(255, 255, 255, .12);
+    padding: 18px 14px;
+    overflow-y: auto;
+}
+
+.col-md-2 h4.p-3 {
+    margin: 0 8px 14px;
+    padding: 0 0 12px !important;
+    font-family: 'Playfair Display', serif;
+    font-size: 1.45rem;
+    border-bottom: 1px solid rgba(255, 255, 255, .1);
+}
+
+.nav-section-label {
+    font-size: .72rem;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: #8ea6bf;
+    margin: 14px 10px 6px;
+    font-weight: 600;
+}
+
+.nav-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 2px 4px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    color: #dbe7f3;
+    text-decoration: none;
+    font-size: .9rem;
+    font-weight: 500;
+    transition: background .2s, color .2s;
+}
+
+.nav-link svg {
+    width: 16px;
+    height: 16px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.8;
+    flex-shrink: 0;
+}
+
+.nav-link:hover {
+    background: rgba(255, 255, 255, .08);
+    color: #fff;
+}
+
+.nav-link.active {
+    background: rgba(13, 148, 136, .16);
+    color: #99f6e4;
+    border: 1px solid rgba(13, 148, 136, .35);
+}
+
+.col-md-10.p-4 { padding: 24px !important; }
+
+.page-header {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    box-shadow: 0 10px 28px rgba(15, 39, 68, .08);
+    padding: 18px 20px;
+    margin-bottom: 18px;
+}
+
+.page-header h2 {
+    margin: 0 0 6px;
+    font-family: 'Playfair Display', serif;
+    color: var(--navy);
+    font-size: 1.75rem;
+}
+
+.page-header p {
+    margin: 0;
+    color: var(--slate);
+    font-size: .92rem;
+}
+
+.card {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    box-shadow: 0 12px 32px rgba(15, 39, 68, .08);
+    overflow: hidden;
+}
+
+.card-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    padding: 15px 16px;
+    border-bottom: 1px solid var(--line);
+    flex-wrap: wrap;
+}
+
+.card-head h3 {
+    margin: 0;
+    color: var(--navy);
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.tbl {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.tbl th,
+.tbl td {
+    padding: 11px 14px;
+    border-bottom: 1px solid var(--line);
+    font-size: .86rem;
+    vertical-align: middle;
+}
+
+.tbl th {
+    font-size: .72rem;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: #64748b;
+    font-weight: 700;
+}
+
+.tbl tbody tr:hover { background: #f8fafc; }
+
+.badge {
+    display: inline-flex;
+    border-radius: 999px;
+    padding: 4px 10px;
+    font-size: .74rem;
+    font-weight: 600;
+}
+
+.badge-pending { background: #fef3c7; color: #92400e; }
+.badge-approved { background: #dcfce7; color: #166534; }
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    border-radius: 10px;
+    border: 1px solid transparent;
+    text-decoration: none;
+    font-size: .82rem;
+    font-weight: 600;
+    padding: 8px 12px;
+    transition: all .2s;
+    line-height: 1;
+}
+
+.btn svg {
+    width: 14px;
+    height: 14px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+}
+
+.btn-teal { background: var(--teal); color: #fff; }
+.btn-teal:hover { background: var(--teal-dk); color: #fff; }
+
+.btn-red { background: #dc2626; color: #fff; }
+.btn-red:hover { background: #b91c1c; color: #fff; }
+
+@media (max-width: 900px) {
+    .col-md-2.bg-dark.text-white.vh-100 { min-height: auto !important; }
+    .tbl { min-width: 840px; }
+    .card { overflow-x: auto; }
+}
+</style>
+<div class="page-header">
+    <h2>Manage Pharmacies</h2>
+    <p>Pharmacy attributes and class functions overview.</p>
+</div>
+
+<div class="card">
+    <div class="card-head">
+        <h3>Registered Pharmacies</h3>
+        <a href="{{ url_for('user.add_pharmacy') }}" class="btn btn-teal">
+            <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Add Pharmacy
+        </a>
+    </div>
+
+    <div class="card-body" style="padding:0;">
+        {% if pharmacies %}
+        <table class="tbl">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Code</th>
+                    <th>Name</th>
+                    <th>Location</th>
+                    <th>Contact</th>
+                    <th>License No</th>
+                    <th>Status</th>
+                    <th>Pharmacy Admin</th>
+                    <th>Pharmacists</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in pharmacies %}
+                <tr>
+                    <td style="color:var(--slate);">{{ p[0] }}</td>
+                    <td><span class="badge" style="background:#e0f2fe;color:#0369a1;font-family:monospace;">{{ p[1] }}</span></td>
+                    <td style="font-weight:600;">{{ p[2] }}</td>
+                    <td style="color:var(--slate);">{{ p[3] or '-' }}</td>
+                    <td style="color:var(--slate);">{{ p[4] or '-' }}</td>
+                    <td><span class="badge" style="background:#ecfeff;color:#0f766e;font-family:monospace;">{{ p[5] or '-' }}</span></td>
+                    <td>
+                        <span class="badge {{ 'badge-approved' if p[6] == 'active' else 'badge-pending' }}">
+                            {{ (p[6] or 'unknown').title() }}
+                        </span>
+                    </td>
+                    <td style="color:var(--slate);">{{ p[7] or '-' }}</td>
+                    <td style="color:var(--slate);">{{ p[8] or '-' }}</td>
+                    <td>
+                        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                            <a href="{{ url_for('user.edit_pharmacy', pharmacy_id=p[0]) }}"
+                               class="btn btn-teal">
+                                <svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5Z"/></svg>
+                                Update
+                            </a>
+                            <a href="{{ url_for('user.delete_pharmacy', pharmacy_id=p[0]) }}"
+                               class="btn btn-red"
+                               onclick="return confirm('Delete this pharmacy?')">
+                                <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                                Delete
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div style="padding:52px;text-align:center;color:var(--slate);">
+            <p style="margin:0 0 8px;font-weight:600;color:var(--navy);">No pharmacies registered yet</p>
+            <a href="{{ url_for('user.add_pharmacy') }}" class="btn btn-teal">Add first pharmacy</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

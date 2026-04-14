@@ -1,0 +1,159 @@
+{% extends 'base.html' %}
+{% block title %}Stock Management - PharmaCare{% endblock %}
+{% block page_title %}Stock Management{% endblock %}
+{% set active_page = active_page|default('inventory') %}
+
+{% block sidebar %}
+<div class="nav-section-label">Overview</div>
+<a href="{{ url_for('user.pharmacy_admin_dashboard') }}" class="nav-link {{ 'active' if active_page == 'dashboard' else '' }}">
+    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+    Dashboard
+</a>
+
+<div class="nav-section-label">Staff</div>
+<a href="{{ url_for('user.pharmacy_admin_manage_staff') }}" class="nav-link {{ 'active' if active_page == 'manage_staff' else '' }}">
+    <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    Manage Staff
+</a>
+
+<div class="nav-section-label">Inventory</div>
+<a href="{{ url_for('user.pharmacy_admin_inventory') }}" class="nav-link {{ 'active' if active_page == 'inventory' else '' }}">
+    <svg viewBox="0 0 24 24"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18"/></svg>
+    Stock Management
+</a>
+<a href="{{ url_for('user.pharmacy_admin_orders') }}" class="nav-link {{ 'active' if active_page == 'orders' else '' }}">
+    <svg viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+    Orders
+</a>
+
+<div class="nav-section-label">Finance</div>
+<a href="{{ url_for('user.pharmacy_admin_sales_reports') }}" class="nav-link {{ 'active' if active_page == 'sales_reports' else '' }}">
+    <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+    Sales Reports
+</a>
+<a href="{{ url_for('user.pharmacy_admin_billing_overview') }}" class="nav-link {{ 'active' if active_page == 'billing_overview' else '' }}">
+    <svg viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+    Billing Overview
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>Pharmacy Inventory</h2>
+    <p>Medicines available in your assigned pharmacy.</p>
+</div>
+
+<div class="card" id="add-medicine">
+    <div class="card-head">
+        <h3>Add Medicine</h3>
+    </div>
+    <div class="card-body">
+        {% if request.args.get('medicine_saved') %}
+        <div class="alert success-alert" style="margin-bottom:12px;">Medicine saved successfully.</div>
+        {% endif %}
+        {% if request.args.get('medicine_error') %}
+        <div class="alert error-alert" style="margin-bottom:12px;">{{ request.args.get('medicine_error') }}</div>
+        {% endif %}
+        <form method="post" action="{{ url_for('user.add_pharmacy_admin_medicine') }}" class="medicine-form">
+            <input type="text" name="medicine_name" placeholder="Medicine name (e.g., Dolo 650)" required>
+            <input type="text" name="medicine_content" placeholder="Content (e.g., Paracetamol)" required>
+            <input type="text" name="brand_name" placeholder="Brand (optional)">
+            <input type="number" name="stock_qty" placeholder="Stock qty" min="0" required>
+            <input type="number" name="unit_price" placeholder="Unit price" step="0.01" min="0" required>
+            <input type="number" name="min_stock_level" placeholder="Min stock" min="0" value="10" required>
+            <button type="submit" class="btn btn-teal">Add / Update</button>
+        </form>
+    </div>
+</div>
+
+<div class="stats-grid" style="margin-bottom:20px;">
+    <div class="stat-card">
+        <div class="stat-label">Total Medicines</div>
+        <div class="stat-value">{{ total_medicines }}</div>
+        <div class="stat-sub">Active items</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Low Stock Alerts</div>
+        <div class="stat-value" style="color:#dc2626;">{{ low_stock }}</div>
+        <div class="stat-sub" style="color:#dc2626;">Reorder needed</div>
+        <div style="margin-top:10px;">
+            <a href="{{ url_for('user.pharmacy_admin_orders') }}" class="btn btn-ghost">Open Reorder Queue</a>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-head">
+        <h3>Inventory List</h3>
+        <span style="font-size:.85rem;color:var(--slate);">{{ inventory_items|length }} shown</span>
+    </div>
+    <div class="card-body" style="padding:0;">
+        {% if inventory_items %}
+        <table class="tbl">
+            <thead>
+                <tr>
+                    <th>Medicine</th>
+                    <th>Content</th>
+                    <th>Brand</th>
+                    <th>Stock</th>
+                    <th>Unit Price</th>
+                    <th>Min Stock</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in inventory_items %}
+                <tr>
+                    <td style="font-weight:600;">{{ item[0] }}</td>
+                    <td>{{ item[1] }}</td>
+                    <td>{{ item[2] }}</td>
+                    <td>{{ item[3] }}</td>
+                    <td>{{ item[4] }}</td>
+                    <td>{{ item[5] }}</td>
+                    <td>
+                        {% if item[3] <= item[5] %}
+                        <span class="badge badge-rejected">Low</span>
+                        {% else %}
+                        <span class="badge badge-approved">In Stock</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state">
+            <svg viewBox="0 0 24 24"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18"/></svg>
+            <p class="empty-title">No medicines found for this pharmacy.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_head %}
+<style>
+    .alert { border-radius: 12px; padding: 12px 14px; margin-bottom: 14px; font-size: .9rem; }
+    .success-alert { background:#ecfdf5; border:1px solid #86efac; color:#166534; }
+    .error-alert { background:#fef2f2; border:1px solid #fecaca; color:#991b1b; }
+    .empty-state {
+        padding: 40px;
+        text-align: center;
+        color: var(--slate);
+    }
+    .empty-state svg {
+        width: 36px;
+        height: 36px;
+        stroke: var(--line);
+        fill: none;
+        stroke-width: 1.5;
+        display: block;
+        margin: 0 auto 12px;
+    }
+    .empty-title {
+        font-weight: 500;
+        color: var(--navy);
+        font-size: .9rem;
+    }
+</style>
+{% endblock %}

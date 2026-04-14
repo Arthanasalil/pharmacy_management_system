@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% block title %}My Prescriptions - PharmaC{% endblock %}
+
+{% block sidebar %}
+{% set active_page = 'my_prescriptions' %}
+{% include 'dashboards/_doctor_sidebar.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>My Prescriptions</h2>
+    <p>All prescriptions you have issued to your patients.</p>
+</div>
+
+<div class="card">
+    <div class="card-head"><h3>Issued Prescriptions</h3></div>
+    <div class="card-body" style="padding:0;">
+        {% if prescriptions %}
+        <table class="tbl">
+            <thead><tr><th>#</th><th>Patient</th><th>Medicine / Document</th><th>Date</th><th>Status</th></tr></thead>
+            <tbody>
+                {% for p in prescriptions %}
+                {% set status = (p[4] or 'pending')|trim|lower %}
+                <tr>
+                    <td style="color:var(--slate);font-size:.82rem;">{{ p[0] }}</td>
+                    <td style="font-weight:500;">{{ p[1] }}</td>
+                    <td>{{ p[2] }}</td>
+                    <td style="color:var(--slate);">{{ p[3] }}</td>
+                    <td><span class="badge badge-{{ status if status else 'pending' }}">{{ (status if status else 'pending').replace('_', ' ').title() }}</span></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div style="padding:48px;text-align:center;color:var(--slate);">No prescriptions found yet.</div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+{% block title %}Approve Users — PharmaCare{% endblock %}
+{% block page_title %}Approve Users{% endblock %}
+
+{% block sidebar %}
+<div class="nav-section-label">Overview</div>
+<a href="{{ url_for('user.system_admin_dashboard') }}" class="nav-link">
+    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+    Dashboard
+</a>
+
+<div class="nav-section-label">User Management</div>
+<a href="{{ url_for('user.view_users') }}" class="nav-link active">
+    <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    Approve Users
+</a>
+<a href="{{ url_for('user.all_users') }}" class="nav-link">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+    All Users
+</a>
+
+<div class="nav-section-label">System</div>
+<a href="{{ url_for('user.view_pharmacies') }}" class="nav-link">
+    <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+    Manage Pharmacies
+</a>
+
+<div class="nav-section-label">Reports</div>
+<a href="{{ url_for('system_report_view') }}" class="nav-link">
+    <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+    System Reports
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>Pending Registrations</h2>
+    <p>Review and approve or reject new user requests below.</p>
+</div>
+
+<div class="card">
+    <div class="card-head">
+        <h3>Users Awaiting Approval</h3>
+        <span class="badge badge-pending">{{ users|length }} pending</span>
+    </div>
+    <div class="card-body" style="padding:0;">
+        {% if users %}
+        <table class="tbl">
+            <thead>
+                <tr>
+                    <th>#</th><th>Full Name</th><th>Email</th><th>Role</th><th>Status</th><th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for u in users %}
+                <tr>
+                    <td style="color:var(--slate);font-size:.82rem;">{{ u[0] }}</td>
+                    <td style="font-weight:500;">{{ u[1] }}</td>
+                    <td style="color:var(--slate);">{{ u[2] }}</td>
+                    <td><span class="badge badge-{{ u[3] }}">{{ u[3].replace('_',' ').title() }}</span></td>
+                    <td><span class="badge badge-pending">Pending</span></td>
+                    <td>
+                        <div style="display:flex;gap:8px;">
+                            <a href="{{ url_for('user.approve_user', user_id=u[0]) }}" class="btn btn-teal">
+                                <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Approve
+                            </a>
+                            <a href="{{ url_for('user.reject_user', user_id=u[0]) }}" class="btn btn-red"
+                               onclick="return confirm('Reject and permanently delete this user?')">
+                                <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Reject
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div style="padding:60px;text-align:center;color:var(--slate);">
+            <svg viewBox="0 0 24 24" style="width:48px;height:48px;stroke:var(--line);fill:none;stroke-width:1.5;display:block;margin:0 auto 16px;">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <polyline points="16 11 18 13 22 9"/>
+            </svg>
+            <p style="font-size:.95rem;font-weight:500;color:var(--navy);margin-bottom:6px;">All clear!</p>
+            <p style="font-size:.85rem;">No pending users at the moment.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

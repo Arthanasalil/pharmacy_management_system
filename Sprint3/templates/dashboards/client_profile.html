@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% block title %}My Profile - PharmaC{% endblock %}
+{% block sidebar %}
+{% set active_page = 'profile' %}
+{% include 'dashboards/_client_sidebar.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>My Profile</h2>
+    <p>Review and update your client profile details.</p>
+</div>
+
+{% if success %}
+<div class="card" style="border-color:#86efac;background:#f0fdf4;">
+    <div class="card-body" style="color:#166534;font-weight:600;">Profile updated successfully.</div>
+</div>
+{% endif %}
+
+<div class="card" style="max-width:900px;">
+    <div class="card-head"><h3>Profile Details</h3></div>
+    <div class="card-body">
+        {% if profile %}
+        <form method="POST" action="{{ url_for('user.client_profile') }}">
+            <div style="display:grid;grid-template-columns:repeat(2,minmax(220px,1fr));gap:14px;">
+                <div>
+                    <label style="font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--slate);font-weight:600;">Client Code</label>
+                    <input type="text" value="{{ profile[0] }}" readonly style="margin-top:6px;width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#f8fafc;">
+                </div>
+                <div>
+                    <label style="font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--slate);font-weight:600;">Email</label>
+                    <input type="email" value="{{ profile[2] }}" readonly style="margin-top:6px;width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#f8fafc;">
+                </div>
+
+                <div>
+                    <label style="font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--slate);font-weight:600;">Full Name</label>
+                    <input type="text" name="name" value="{{ profile[1] or '' }}" required style="margin-top:6px;width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;">
+                </div>
+                <div>
+                    <label style="font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--slate);font-weight:600;">Date of Birth</label>
+                    <input type="date" name="dateOfBirth" value="{{ profile[3] if profile[3] else '' }}" style="margin-top:6px;width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;">
+                </div>
+
+                <div>
+                    <label style="font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--slate);font-weight:600;">Phone</label>
+                    <input type="text" name="phone" value="{{ profile[4] or '' }}" style="margin-top:6px;width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;">
+                </div>
+                <div>
+                    <label style="font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--slate);font-weight:600;">Address</label>
+                    <input type="text" name="address" value="{{ profile[5] or '' }}" style="margin-top:6px;width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;">
+                </div>
+
+                <div style="grid-column:1/-1;">
+                    <label style="font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--slate);font-weight:600;">Allergies</label>
+                    <textarea name="allergies" rows="4" style="margin-top:6px;width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;">{{ profile[6] or '' }}</textarea>
+                </div>
+            </div>
+
+            <div style="margin-top:16px;display:flex;gap:10px;">
+                <button type="submit" class="btn btn-teal">Update Profile</button>
+                <a href="{{ url_for('user.client_dashboard') }}" class="btn btn-ghost">Back to Dashboard</a>
+            </div>
+        </form>
+        {% else %}
+        <div style="padding:24px;color:var(--slate);">Profile not found.</div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

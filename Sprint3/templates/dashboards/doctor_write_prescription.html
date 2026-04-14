@@ -1,0 +1,168 @@
+{% extends 'base.html' %}
+{% block title %}Write Prescription{% endblock %}
+{% block page_title %}Write Prescription{% endblock %}
+
+{% block sidebar %}
+{% set active_page = 'write_prescription' %}
+{% include 'dashboards/_doctor_sidebar.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>Write Prescription</h2>
+    <p>Assign medicines to a patient using client id or client code and send prescription to client.</p>
+</div>
+
+{% if success %}
+<div class="alert success-alert">{{ success }}</div>
+{% endif %}
+{% if error %}
+<div class="alert error-alert">{{ error }}</div>
+{% endif %}
+
+<div class="card">
+    <div class="card-head">
+        <h3>Prescription Form</h3>
+    </div>
+    <div class="card-body">
+        <form method="post" id="rxForm">
+            <div class="form-grid">
+                <div>
+                    <label>Client ID / Client Code</label>
+                    <input type="text" name="client_lookup" placeholder="e.g. 4 or CLT-0004" required>
+                </div>
+            </div>
+
+            <div class="med-table-wrap">
+                <datalist id="medicine-suggestions"></datalist>
+                <table class="tbl" id="medTable">
+                    <thead>
+                        <tr>
+                            <th>Medicine Name</th>
+                            <th>Strength (mg)</th>
+                            <th>Dosage</th>
+                            <th>Timing</th>
+                            <th>Days</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+<input type="text" name="medicine_name[]" class="med-name-input" list="medicine-suggestions" placeholder="Paracetamol / Dolo"></td>
+                            <td><input type="number" name="strength_mg[]" min="0" placeholder="650"></td>
+                            <td><input type="text" name="dosage[]" placeholder="1-0-1"></td>
+                            <td>
+                                <select name="timing[]">
+                                    <option value="After Food">After Food</option>
+                                    <option value="Before Food">Before Food</option>
+                                    <option value="Any Time">Any Time</option>
+                                </select>
+                            </td>
+                            <td><input type="number" name="duration_days[]" min="1" value="5"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;">
+                <button type="button" class="btn btn-ghost" onclick="addMedicineRow()">Add Medicine Row</button>
+                <button type="submit" class="btn btn-teal">Create & Send Prescription</button>
+            </div>
+
+            <div style="margin-top:16px;">
+                <label>Doctor Notes</label>
+                <textarea name="notes" rows="3" placeholder="Additional notes for pharmacist/patient"></textarea>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_head %}
+<style>
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 12px;
+        margin-bottom: 14px;
+    }
+    label {
+        display: block;
+        margin-bottom: 6px;
+        font-size: .85rem;
+        color: var(--slate);
+    }
+    input, select, textarea {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        font-size: .9rem;
+        background: #fff;
+    }
+    .med-table-wrap input, .med-table-wrap select {
+        min-width: 120px;
+    }
+    .alert {
+        border-radius: 12px;
+        padding: 12px 14px;
+        margin-bottom: 16px;
+        font-size: .9rem;
+    }
+    .success-alert {
+        background: #ecfdf5;
+        border: 1px solid #86efac;
+        color: #166534;
+    }
+    .error-alert {
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        color: #991b1b;
+    }
+</style>
+<script>
+function addMedicineRow() {
+    const tbody = document.querySelector('#medTable tbody');
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+<td><input type="text" name="medicine_name[]" class="med-name-input" list="medicine-suggestions" placeholder="Medicine"></td>
+        <td><input type="number" name="strength_mg[]" min="0" placeholder="mg"></td>
+        <td><input type="text" name="dosage[]" placeholder="1-0-1"></td>
+        <td>
+            <select name="timing[]">
+                <option value="After Food">After Food</option>
+                <option value="Before Food">Before Food</option>
+                <option value="Any Time">Any Time</option>
+            </select>
+        </td>
+        <td><input type="number" name="duration_days[]" min="1" value="5"></td>
+    `;
+    tbody.appendChild(tr);
+}
+
+let medicineSuggestTimer = null;
+
+async function loadMedicineSuggestions(query) {
+    const datalist = document.getElementById('medicine-suggestions');
+    const url = `{{ url_for('user.doctor_medicine_suggest') }}?q=${encodeURIComponent(query || '')}`;
+    try {
+        const response = await fetch(url, { method: 'GET' });
+        const data = await response.json();
+        const items = (data && data.suggestions) ? data.suggestions : [];
+        datalist.innerHTML = items.map(name => `<option value="${name}"></option>`).join('');
+    } catch (e) {
+        // Keep form usable even if suggestions fail.
+    }
+}
+
+document.addEventListener('input', function (e) {
+    if (!e.target.classList.contains('med-name-input')) return;
+    const query = e.target.value || '';
+    clearTimeout(medicineSuggestTimer);
+    medicineSuggestTimer = setTimeout(() => loadMedicineSuggestions(query), 180);
+});
+
+document.addEventListener('DOMContentLoaded', function () {
+    loadMedicineSuggestions('');
+});
+</script>
+{% endblock %}

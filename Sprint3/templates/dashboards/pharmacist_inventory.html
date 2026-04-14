@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% block title %}Stock Levels{% endblock %}
+{% block page_title %}Stock Levels{% endblock %}
+
+{% block sidebar %}
+{% include 'dashboards/_pharmacist_sidebar.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>Stock Levels</h2>
+    <p>Inventory list for your pharmacy.</p>
+</div>
+
+<div class="stats-grid" style="margin-bottom:20px;">
+    <div class="stat-card">
+        <div class="stat-label">Total Medicines</div>
+        <div class="stat-value">{{ total_medicines }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Low Stock Items</div>
+        <div class="stat-value" style="color:#dc2626;">{{ low_stock }}</div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-head">
+        <h3>Current Inventory</h3>
+        <span style="font-size:.85rem;color:var(--slate);">{{ inventory_items|length }} shown</span>
+    </div>
+    <div class="card-body" style="padding:0;">
+        {% if inventory_items %}
+        <table class="tbl">
+            <thead>
+                <tr><th>Medicine</th><th>Content</th><th>Brand</th><th>Stock</th><th>Unit Price</th><th>Min Stock</th></tr>
+            </thead>
+            <tbody>
+                {% for item in inventory_items %}
+                <tr>
+                    <td style="font-weight:500;">{{ item[0] }}</td>
+                    <td>{{ item[1] }}</td>
+                    <td>{{ item[2] }}</td>
+                    <td>{{ item[3] }}</td>
+                    <td>{{ item[4] }}</td>
+                    <td>{{ item[5] }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div style="padding:40px;color:var(--slate);text-align:center;">No medicines in inventory.</div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-head">
+        <h3>Low Stock Alerts</h3>
+    </div>
+    <div class="card-body" style="padding:0;">
+        {% if low_stock_items %}
+        <table class="tbl">
+            <thead>
+                <tr><th>Medicine</th><th>Current Stock</th><th>Min Required</th><th>Status</th></tr>
+            </thead>
+            <tbody>
+                {% for item in low_stock_items %}
+                <tr>
+                    <td style="font-weight:500;">{{ item[0] }}</td>
+                    <td style="color:#dc2626;font-weight:500;">{{ item[1] }}</td>
+                    <td style="color:var(--slate);">{{ item[2] }}</td>
+                    <td><span class="badge" style="background:#fee2e2;color:#b91c1c;">Low Stock</span></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div style="padding:40px;color:var(--slate);text-align:center;">All stock levels are healthy.</div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
